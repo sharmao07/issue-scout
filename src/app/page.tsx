@@ -348,15 +348,16 @@ export default function Home() {
                     key={issue.id}
                     className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition hover:border-cyan-300/40"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <a
-                        href={issue.repositoryUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm text-cyan-300 hover:underline"
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs capitalize ${
+                          issue.state === "open"
+                            ? "bg-emerald-400/10 text-emerald-300"
+                            : "bg-slate-400/10 text-slate-300"
+                        }`}
                       >
-                        {issue.repository}
-                      </a>
+                        {issue.state}
+                      </span>
 
                       <span className="rounded-full bg-white/10 px-3 py-1 text-xs capitalize text-slate-300">
                         Suggested: {issue.level}
@@ -397,6 +398,9 @@ export default function Home() {
                       <span>#{issue.number}</span>
                       <span>by {issue.author}</span>
                       <span>{issue.comments} comments</span>
+                      <span>
+                        Created {new Date(issue.createdAt).toLocaleDateString()}
+                      </span>
                       <span>
                         Updated{" "}
                         {new Date(issue.updatedAt).toLocaleDateString()}

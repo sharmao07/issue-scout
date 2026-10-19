@@ -12,6 +12,7 @@ export type IssueLabel = {
 };
 
 export type ScoutIssue = {
+  state: "open" | "closed"
   id: number;
   number: number;
   title: string;
