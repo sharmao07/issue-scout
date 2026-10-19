@@ -44,4 +44,4 @@ Please describe the change and test it before submitting a PR.
 
 ## License
 
-Licensed under the MIT License. See `LICENSE`.
+Licensed under the MIT License. See `[LICENSE](https://github.com/sharmao07/issue-scout/blob/main/LICENSE.md)`.
