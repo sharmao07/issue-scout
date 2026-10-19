@@ -15,7 +15,24 @@ type SearchError = {
   error?: string;
 };
 
+type IssueAgeFilter = 
+  | "any"
+  | "12h"
+  | "1d"
+  | "2d"
+  | "4d"
+  | "6d"
+  | "1w"
+  | "2w"
+  | "1m"
+  | "2m"
+  | "older";
+
+type IssueStatusFilter = "open" | "closed" | "all";  
+
 export default function Home() {
+  const [age, setAge] = useState<IssueAgeFilter>("any");
+  const [status, setStatus] = useState<IssueStatusFilter>("open");
   const [query, setQuery] = useState("");
   const [label, setLabel] = useState("");
   const [level, setLevel] = useState<LevelFilter>("all");
@@ -41,6 +58,8 @@ export default function Home() {
         label,
         level,
         language,
+        age,
+        status,
       });
 
       const response = await fetch(
@@ -147,7 +166,7 @@ export default function Home() {
               className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-4 text-base outline-none placeholder:text-slate-500 focus:border-cyan-300"
             />
 
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div>
               <label
                 htmlFor="language"
@@ -206,6 +225,58 @@ export default function Home() {
                 >
                   Suggested skill level
                 </label>
+
+                <div>
+                  <label
+                    htmlFor="age"
+                    className="mb-2 block text-sm font-semibold text-slate-300"
+                  >
+                    When was it created?
+                  </label>
+
+                  <select
+                    id="age"
+                    value={age}
+                    onChange={(event) =>
+                      setAge(event.target.value as IssueAgeFilter)
+                    }
+                    className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
+                  >
+                    <option value="any">Any time</option>
+                    <option value="12h">Last 12 hours</option>
+                    <option value="1d">Last 1 day</option>
+                    <option value="2d">Last 2 days</option>
+                    <option value="4d">Last 4 days</option>
+                    <option value="6d">Last 6 days</option>
+                    <option value="1w">Last 1 week</option>
+                    <option value="2w">Last 2 weeks</option>
+                    <option value="1m">Last 1 month</option>
+                    <option value="2m">Last 2 months</option>
+                    <option value="older">Older (3 months–1 year)</option>
+                  </select>
+                </div>
+
+                    <div>
+                      <label
+                        htmlFor="status"
+                        className="mb-2 block text-sm font-semibold text-slate-300"
+                      >
+                        Issue status
+                      </label>
+
+                      <select
+                        id="status"
+                        value={status}
+                        onChange={(event) =>
+                          setStatus(event.target.value as IssueStatusFilter)
+                        }
+                        className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
+                      >
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                        <option value="all">Open and closed</option>
+                      </select>
+                    </div>
 
                 <select
                   id="level"
