@@ -133,6 +133,20 @@ export function inferSkillLevel(
 ): SkillLevel {
   const normalizedLabels = labels.map(normalizeLabel);
 
+  const goodFirstIssuePattern =
+    /\bgood first issues?\b|\bfirst timer? only\b|\bbegineer friendly\b|\bnewcomer friendly\b|\bstarter issue\b/i;
+
+  const issueText = `${title}\n${body}`;
+
+  const isGoodFirstIssue =
+    normalizedLabels.some((label) =>
+      goodFirstIssuePattern.test(label),
+    ) || goodFirstIssuePattern.test(issueText);
+
+  if (isGoodFirstIssue) {
+    return "beginner";
+  }
+
   // Explicit maintainer difficulty labels are stronger than text guesses.
   const declaredLevels = (
     Object.entries(EXPLICIT_LABELS) as [RatedLevel, RegExp][]
