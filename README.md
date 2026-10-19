@@ -5,15 +5,22 @@
 Issue Scout is an open-source project designed to help beginners
 and experienced developers discover useful GitHub issues to work on.
 
-## Planned features
+## Features
 
-- Search real issues from public GitHub repositories.
-- Filter by programming language, labels, and skill level.
-- Discover beginner-friendly and more advanced contributions.
-- Show why an issue may suit your skills and interests.
-- Save issues to a personal shortlist.
+- Search public GitHub issues by keyword.
+- Filter by issue labels.
+- Get heuristic skill-level suggestions.
+- Open the original issue directly on GitHub.
+- Clear loading and error states.
 
-Difficulty and effort estimates will be guidance, not guarantees.
+## Roadmap
+
+- More accurate language-based discovery.
+- Saved issues and personal preferences.
+- Optional AI-assisted summaries in a later version.
+
+Skill levels are estimates, not guarantees. Issue Scout links
+to GitHub for the authoritative issue details.
 
 ## Tech stack
 
