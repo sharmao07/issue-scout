@@ -23,6 +23,7 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [language, setLanguage] = useState("");
   const [error, setError] = useState("");
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -39,6 +40,7 @@ export default function Home() {
         q: query.trim(),
         label,
         level,
+        language,
       });
 
       const response = await fetch(
@@ -145,7 +147,32 @@ export default function Home() {
               className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-4 text-base outline-none placeholder:text-slate-500 focus:border-cyan-300"
             />
 
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              <div>
+              <label
+                htmlFor="language"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
+                Programming language
+              </label>
+
+              <select
+                id="language"
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
+              >
+                <option value="">Any language</option>
+                <option value="Python">Python</option>
+                <option value="TypeScript">TypeScript</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="Rust">Rust</option>
+                <option value="Go">Go</option>
+                <option value="Swift">Swift</option>
+                <option value="Java">Java</option>
+                <option value="C++">C++</option>
+              </select>
+            </div>
               <div>
                 <label
                   htmlFor="label"
@@ -192,6 +219,7 @@ export default function Home() {
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
+                  <option value="unspecified">Unspecified</option>
                 </select>
               </div>
             </div>

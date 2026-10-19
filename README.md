@@ -7,12 +7,11 @@ and experienced developers discover useful GitHub issues to work on.
 
 ## Features
 
-- Search public GitHub issues by keyword.
-- Filter by issue labels.
-- Get heuristic skill-level suggestions.
-- Open the original issue directly on GitHub.
-- Clear loading and error states.
-
+- Keyword search against public GitHub issues.
+- Label and programming-language filters.
+- Heuristic skill-level suggestions, including unspecified difficulty.
+- Direct links to original issues.
+- Loading and error handling.
 ## Roadmap
 
 - More accurate language-based discovery.

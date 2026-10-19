@@ -35,6 +35,10 @@ export async function GET(request: Request) {
       .trim()
       .slice(0, 60);
 
+    const language = (params.get("language") ?? "")
+      .replace(/[^a-zA-Z0-9+#.-]/g, "")
+      .slice(0, 40);  
+
     const requestedLevel = params.get("level") ?? "all";
     const allowedLevels = [
       "all",
@@ -55,6 +59,10 @@ export async function GET(request: Request) {
 
     if (label) {
       queryParts.push(`label:"${label}"`);
+    }
+
+    if (language) {
+      queryParts.push(`language:${language}`);
     }
 
     const apiUrl = new URL(

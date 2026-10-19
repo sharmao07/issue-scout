@@ -1,7 +1,8 @@
 export type SkillLevel =
   | "beginner"
   | "intermediate"
-  | "advanced";
+  | "advanced"
+  | "unspecified";
 
 export type LevelFilter = "all" | SkillLevel;
 

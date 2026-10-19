@@ -19,5 +19,5 @@ export function inferSkillLevel(
     return "advanced";
   }
 
-  return "intermediate";
+  return "unspecified";
 }
