@@ -282,6 +282,63 @@ export default function Home() {
                   {loading ? "Searching..." : "Find issues →"}
                 </button>
               </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs font-medium text-slate-500">
+                  Quick start:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("good first issue");
+                    setLanguage("");
+                    setLabel("good first issue");
+                    setLevel("beginner");
+                  }}
+                  className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                >
+                  Beginner-friendly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("documentation");
+                    setLanguage("");
+                    setLabel("documentation");
+                    setLevel("all");
+                  }}
+                  className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                >
+                  Documentation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("bug");
+                    setLanguage("");
+                    setLabel("bug");
+                    setLevel("all");
+                  }}
+                  className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                >
+                  Bug fixes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setLanguage("Python");
+                    setLabel("");
+                    setLevel("all");
+                  }}
+                  className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                >
+                  Python
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Pick a starting point, adjust the filters, then select Find issues.
+              </p>
             </div>
 
             <div className="p-5 sm:p-7">
