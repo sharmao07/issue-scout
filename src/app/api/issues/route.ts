@@ -265,7 +265,9 @@ export async function GET(request: Request) {
         state: issue.state,
         level: inferSkillLevel(
           labels.map((item) => item.name),
-        ),
+          issue.title,
+          issue.body ??"",
+      ),
       };
     });
 
