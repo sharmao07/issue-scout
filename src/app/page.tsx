@@ -96,6 +96,30 @@ export default function Home() {
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
 
+  function applyQuickStart(preset: {
+  query: string;
+  language: string;
+  label: string;
+  level: LevelFilter;
+  }) {
+  setQuery(preset.query);
+  setLanguage(preset.language);
+  setLabel(preset.label);
+  setLevel(preset.level);
+
+  setAge("any");
+  setStatus("open");
+
+  setIssues([]);
+  setTotalCount(0);
+  setAvailableCount(0);
+  setTotalPages(1);
+  setPage(1);
+
+  setError("");
+  setSearched(false);
+}
+
   async function runSearch(requestedPage: number) {
     const safePage = Math.max(1, Math.min(20, requestedPage));
 
@@ -289,48 +313,56 @@ export default function Home() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => {
-                    setQuery("good first issue");
-                    setLanguage("");
-                    setLabel("good first issue");
-                    setLevel("beginner");
-                  }}
+                  onClick={() => 
+                    applyQuickStart({
+                      query: "",
+                      language: "",
+                      label: "good first issue",
+                      level: "beginner",
+                  })
+                }
                   className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
                 >
                   Beginner-friendly
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setQuery("documentation");
-                    setLanguage("");
-                    setLabel("documentation");
-                    setLevel("all");
-                  }}
+                 onClick={() =>
+                    applyQuickStart({
+                      query: "",
+                      language: "",
+                      label: "documentation",
+                      level: "all",
+                    })
+                  }
                   className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
                 >
                   Documentation
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setQuery("bug");
-                    setLanguage("");
-                    setLabel("bug");
-                    setLevel("all");
-                  }}
+                  onClick={() =>
+                    applyQuickStart({
+                      query: "",
+                      language: "",
+                      label: "bug",
+                      level: "all",
+                    })
+                  }
                   className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
                 >
                   Bug fixes
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setQuery("");
-                    setLanguage("Python");
-                    setLabel("");
-                    setLevel("all");
-                  }}
+                  onClick={() =>
+                    applyQuickStart({
+                      query: "",
+                      language: "Python",
+                      label: "",
+                      level: "all",
+                    })
+                  }
                   className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
                 >
                   Python

@@ -1,6 +1,11 @@
-
-import { inferSkillLevel } from "@/lib/skill-level";
-import type { LevelFilter, ScoutIssue, SkillLevel } from "@/types/issue";
+import {
+  inferSkillLevel,
+  SKILL_LEVEL_LABELS,
+} from "@/lib/skill-level";
+import type {
+  LevelFilter,
+  ScoutIssue,
+} from "@/types/issue";
 
 type IssueAgeFilter =
   | "any"
@@ -81,15 +86,6 @@ const AGE_WINDOWS_MS: Partial<Record<IssueAgeFilter, number>> = {
   "2w": 14 * 24 * 60 * 60 * 1000,
 };
 
-const LEVEL_LABEL_QUERIES: Partial<Record<SkillLevel, string>> = {
-  beginner:
-    'label:"good first issue","good-first-issue","first-timers-only","beginner","easy"',
-  intermediate:
-    'label:"intermediate","medium","moderate","mid-level"',
-  advanced:
-    'label:"advanced","hard","difficult","complex","expert"',
-};
-
 function formatGitHubTimestamp(date: Date): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
@@ -161,6 +157,85 @@ function sanitizeSearchText(value: string): string {
     .slice(0, 100);
 }
 
+/**
+ * Add space, hyphen, and underscore variants of each label.
+ * The variants account for common differences in GitHub label naming.
+ */
+function getLabelVariants(labels: readonly string[]): string[] {
+  return [
+    ...new Set(
+      labels.flatMap((label) => [
+        label,
+        label.replace(/ /g, "-"),
+        label.replace(/ /g, "_"),
+      ]),
+    ),
+  ];
+}
+
+function quoteLabel(label: string): string {
+  return `"${label.replace(/"/g, '\\"')}"`;
+}
+
+/**
+ * Apply skill-level filtering in GitHub Search itself, before pagination.
+ * This helps each page contain issues relevant to the selected level.
+ */
+function addLevelQualifiers(
+  queryParts: string[],
+  level: LevelFilter,
+): void {
+  if (level === "all") {
+    return;
+  }
+
+  const beginner = getLabelVariants(SKILL_LEVEL_LABELS.beginner);
+  const intermediate = getLabelVariants(
+    SKILL_LEVEL_LABELS.intermediate,
+  );
+  const advanced = getLabelVariants(SKILL_LEVEL_LABELS.advanced);
+
+  const excludeLabels = (labels: string[]) =>
+    labels.map((label) => `-label:${quoteLabel(label)}`);
+
+  if (level === "unspecified") {
+    // Exclude every label category recognized by our classifier.
+    queryParts.push(
+      ...excludeLabels([
+        ...beginner,
+        ...intermediate,
+        ...advanced,
+      ]),
+    );
+
+    return;
+  }
+
+  const selected =
+    level === "beginner"
+      ? beginner
+      : level === "intermediate"
+        ? intermediate
+        : advanced;
+
+  // Include issues carrying one of the selected level's labels.
+  queryParts.push(
+    `label:${selected.map(quoteLabel).join(",")}`,
+  );
+
+  // Match the classifier's priority when an issue has several
+  // different difficulty labels.
+  if (level === "intermediate") {
+    queryParts.push(...excludeLabels(beginner));
+  }
+
+  if (level === "advanced") {
+    queryParts.push(
+      ...excludeLabels([...beginner, ...intermediate]),
+    );
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
@@ -213,7 +288,7 @@ export async function GET(request: Request) {
 
     const queryParts = ["is:issue"];
 
-    // Filter the GitHub search itself by state before pagination.
+    // Filter issue state before pagination.
     if (status !== "all") {
       queryParts.push(`is:${status}`);
     }
@@ -236,16 +311,8 @@ export async function GET(request: Request) {
       queryParts.push(createdFilter);
     }
 
-    // Restrict skill-filtered searches to common difficulty labels
-    // before pagination. This avoids filling a page with unrelated
-    // issues and then filtering almost all of them out.
-    if (level !== "all" && level !== "unspecified") {
-      const levelQuery = LEVEL_LABEL_QUERIES[level];
-
-      if (levelQuery) {
-        queryParts.push(levelQuery);
-      }
-    }
+    // Filter by difficulty in GitHub Search before fetching the page.
+    addLevelQualifiers(queryParts, level);
 
     const apiUrl = new URL(
       "https://api.github.com/search/issues",
@@ -298,7 +365,7 @@ export async function GET(request: Request) {
     const data =
       (await response.json()) as GitHubSearchResponse;
 
-    // GitHub's issue-search endpoint may also return pull requests.
+    // GitHub's search endpoint can also return pull requests.
     // Keep actual issues only.
     const actualIssues = data.items.filter(
       (item) => !item.pull_request,
@@ -329,12 +396,14 @@ export async function GET(request: Request) {
         createdAt: issue.created_at,
         updatedAt: issue.updated_at,
         state: issue.state,
-        level: inferSkillLevel(labels.map((item) => item.name)),
+        level: inferSkillLevel(
+          labels.map((item) => item.name),
+        ),
       };
     });
 
-    // Apply the chosen level after classification. Explicit difficulty
-    // labels are also used in the GitHub query for common level filters.
+    // Keep the classifier as a defensive check, even though the
+    // GitHub query already filters issues by the selected level.
     const filteredIssues =
       level === "all"
         ? issues

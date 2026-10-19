@@ -1,5 +1,32 @@
-
 import type { SkillLevel } from "@/types/issue";
+
+export const SKILL_LEVEL_LABELS = {
+  beginner: [
+    "good first issue",
+    "good first issues",
+    "first timer only",
+    "first timers only",
+    "beginner",
+    "beginner friendly",
+    "easy",
+    "up for grabs",
+    "newcomer friendly",
+    "starter issue",
+  ],
+  intermediate: [
+    "intermediate",
+    "medium",
+    "moderate",
+    "mid level",
+  ],
+  advanced: [
+    "advanced",
+    "hard",
+    "difficult",
+    "complex",
+    "expert",
+  ],
+} as const;
 
 function normalizeLabel(label: string): string {
   return label
@@ -9,32 +36,29 @@ function normalizeLabel(label: string): string {
     .trim();
 }
 
-export function inferSkillLevel(
-  labels: string[],
-): SkillLevel {
-  const normalized = labels.map(normalizeLabel).join(" ");
+export function inferSkillLevel(labels: string[]): SkillLevel {
+  const normalized = new Set(labels.map(normalizeLabel));
 
-  // Good-first-issue labels take priority over other difficulty labels.
   if (
-    /\bgood first issues?\b/.test(normalized) ||
-    /\bfirst timers? only\b/.test(normalized) ||
-    /\bbeginner(?: friendly)?\b/.test(normalized) ||
-    /\beasy\b/.test(normalized) ||
-    /\bup for grabs\b/.test(normalized) ||
-    /\bnewcomer friendly\b/.test(normalized) ||
-    /\bstarter issue\b/.test(normalized)
+    SKILL_LEVEL_LABELS.beginner.some((label) =>
+      normalized.has(normalizeLabel(label)),
+    )
   ) {
     return "beginner";
   }
 
   if (
-    /\b(intermediate|medium|moderate|mid level)\b/.test(normalized)
+    SKILL_LEVEL_LABELS.intermediate.some((label) =>
+      normalized.has(normalizeLabel(label)),
+    )
   ) {
     return "intermediate";
   }
 
   if (
-    /\b(advanced|hard|difficult|complex|expert)\b/.test(normalized)
+    SKILL_LEVEL_LABELS.advanced.some((label) =>
+      normalized.has(normalizeLabel(label)),
+    )
   ) {
     return "advanced";
   }
