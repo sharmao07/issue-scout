@@ -3,6 +3,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { LevelFilter, ScoutIssue } from "@/types/issue";
+import Link from "next/link";
 
 type SearchResponse = {
   total_count: number;
@@ -88,13 +89,13 @@ export default function Home() {
     <main className="min-h-screen bg-[#080b16] text-slate-100">
       <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
         <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <a
+          <Link
             href="/"
             aria-label="Issue Scout home"
             className="text-xl font-black tracking-tight"
           >
             ISSUE<span className="text-cyan-300">SCOUT</span>
-          </a>
+          </Link>
 
           <a
             href="https://github.com/sharmao07/issue-scout"
@@ -229,7 +230,7 @@ export default function Home() {
                 className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/5 p-6 text-red-200"
               >
                 <p className="font-semibold">
-                  We couldn't load issues
+                  We couldn&apos;t load issues
                 </p>
                 <p className="mt-2 text-sm">{error}</p>
 
