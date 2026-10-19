@@ -50,7 +50,7 @@ Repositories use labels differently, so these categories can be incomplete or in
 - View repository, issue title and number, labels, author, comments, created/updated dates, and a short description.
 - Open the original repository and issue directly on GitHub.
 - Show loading, empty-result, and API error states.
-- Quick-start presets for beginner-friendly issues, documentation, bug fixes, and Python (after the preset UI update is applied).
+- Quick-start presets for beginner-friendly issues, documentation, bug fixes, and Python.
 
 ## Run locally
 
@@ -154,6 +154,13 @@ Bug reports, feature ideas, documentation improvements, and pull requests are we
 4. Open a pull request with a clear summary and relevant screenshots or test details.
 
 For feature requests, describe the problem you are trying to solve as well as your suggested solution.
+
+## AI assistance disclosure
+
+AI tools have assisted with parts of this project's debugging,
+code suggestions, and documentation. The maintainer reviews changes and
+is responsible for the final implementation. Tests and checks are only
+described as passed when they have actually been run.
 
 ## License
 
