@@ -2,20 +2,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { LevelFilter, ScoutIssue } from "@/types/issue";
 import Link from "next/link";
+import type { LevelFilter, ScoutIssue } from "@/types/issue";
 
-type SearchResponse = {
-  total_count: number;
-  returned_count: number;
-  issues: ScoutIssue[];
-};
-
-type SearchError = {
-  error?: string;
-};
-
-type IssueAgeFilter = 
+type IssueAgeFilter =
   | "any"
   | "12h"
   | "1d"
@@ -28,19 +18,73 @@ type IssueAgeFilter =
   | "2m"
   | "older";
 
-type IssueStatusFilter = "open" | "closed" | "all";  
+type IssueStatusFilter = "open" | "closed" | "all";
+
+type SearchResponse = {
+  total_count: number;
+  returned_count: number;
+  issues: ScoutIssue[];
+};
+
+type SearchError = {
+  error?: string;
+};
+
+const LANGUAGES = [
+  "Python",
+  "TypeScript",
+  "JavaScript",
+  "Java",
+  "C",
+  "C++",
+  "C#",
+  "Go",
+  "Rust",
+  "Swift",
+  "Kotlin",
+  "PHP",
+  "Ruby",
+  "Dart",
+  "Elixir",
+  "Erlang",
+  "Haskell",
+  "Julia",
+  "Lua",
+  "MATLAB",
+  "Perl",
+  "PowerShell",
+  "R",
+  "Scala",
+  "Shell",
+  "SQL",
+  "HTML",
+  "CSS",
+  "Objective-C",
+  "Clojure",
+  "F#",
+  "OCaml",
+  "Fortran",
+  "Assembly",
+];
+
+const SELECT_CLASS =
+  "w-full min-w-0 appearance-none rounded-xl border border-white/10 bg-[#101626] px-4 py-3.5 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/10";
+
+const LABEL_CLASS =
+  "mb-2.5 block text-sm font-semibold text-slate-300";
 
 export default function Home() {
-  const [age, setAge] = useState<IssueAgeFilter>("any");
-  const [status, setStatus] = useState<IssueStatusFilter>("open");
   const [query, setQuery] = useState("");
+  const [language, setLanguage] = useState("");
   const [label, setLabel] = useState("");
   const [level, setLevel] = useState<LevelFilter>("all");
+  const [age, setAge] = useState<IssueAgeFilter>("any");
+  const [status, setStatus] = useState<IssueStatusFilter>("open");
+
   const [issues, setIssues] = useState<ScoutIssue[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [language, setLanguage] = useState("");
   const [error, setError] = useState("");
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -65,7 +109,9 @@ export default function Home() {
       const response = await fetch(
         `/api/issues?${params.toString()}`,
         {
-          headers: { Accept: "application/json" },
+          headers: {
+            Accept: "application/json",
+          },
         },
       );
 
@@ -106,132 +152,191 @@ export default function Home() {
     }
   }
 
+  function resetFilters() {
+    setQuery("");
+    setLanguage("");
+    setLabel("");
+    setLevel("all");
+    setAge("any");
+    setStatus("open");
+    setIssues([]);
+    setTotalCount(0);
+    setError("");
+    setSearched(false);
+  }
+
   return (
     <main className="min-h-screen bg-[#080b16] text-slate-100">
-      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
+      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
+        <header className="flex items-center justify-between border-b border-white/10 pb-5">
           <Link
             href="/"
             aria-label="Issue Scout home"
-            className="text-xl font-black tracking-tight"
+            className="text-xl font-black tracking-tight sm:text-2xl"
           >
             ISSUE<span className="text-cyan-300">SCOUT</span>
+            <span className="ml-2 hidden text-xs font-medium tracking-normal text-slate-500 sm:inline">
+              OPEN SOURCE DISCOVERY
+            </span>
           </Link>
 
           <a
             href="https://github.com/sharmao07/issue-scout"
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-white/20 px-4 py-2 text-sm transition hover:bg-white/10"
+            className="rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold transition hover:border-cyan-300/50 hover:bg-white/5"
           >
-            GitHub ↗
+            GitHub <span aria-hidden="true">↗</span>
           </a>
         </header>
 
-        <section className="py-14 sm:py-20">
-          <p className="mb-5 text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
-            Your next contribution starts here
-          </p>
+        <section className="pb-16 pt-12 sm:pt-16">
+          <div className="mb-9 max-w-3xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/5 px-3 py-1.5 text-xs font-semibold text-cyan-200">
+              <span className="h-2 w-2 rounded-full bg-cyan-300" />
+              FIND YOUR NEXT CONTRIBUTION
+            </div>
 
-          <h1 className="max-w-4xl text-5xl font-black leading-tight tracking-tight sm:text-7xl">
-            Find issues.
-            <br />
-            Build something{" "}
-            <span className="text-cyan-300">real.</span>
-          </h1>
+            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl lg:text-7xl">
+              Find issues.
+              <br />
+              Build something{" "}
+              <span className="text-cyan-300">real.</span>
+            </h1>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
-            Discover open-source GitHub issues that match your
-            interests and experience. Find opportunities to learn,
-            contribute, and build real software.
-          </p>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg sm:leading-8">
+              Discover open-source opportunities that match your
+              interests, preferred technologies and experience.
+              Find an issue and start contributing.
+            </p>
+          </div>
 
           <form
             onSubmit={handleSearch}
-            className="mt-10 rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-7"
+            className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d1220] shadow-2xl shadow-black/20"
           >
-            <label
-              htmlFor="query"
-              className="mb-2 block text-sm font-semibold text-slate-300"
-            >
-              What do you want to work on?
-            </label>
-
-            <input
-              id="query"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Try Python, documentation, bug fixes..."
-              className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-4 text-base outline-none placeholder:text-slate-500 focus:border-cyan-300"
-            />
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              <div>
-              <label
-                htmlFor="language"
-                className="mb-2 block text-sm font-semibold text-slate-300"
-              >
-                Programming language
+            <div className="border-b border-white/10 p-5 sm:p-7">
+              <label htmlFor="query" className={LABEL_CLASS}>
+                What do you want to work on?
               </label>
 
-              <select
-                id="language"
-                value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
-              >
-                <option value="">Any language</option>
-                <option value="Python">Python</option>
-                <option value="TypeScript">TypeScript</option>
-                <option value="JavaScript">JavaScript</option>
-                <option value="Rust">Rust</option>
-                <option value="Go">Go</option>
-                <option value="Swift">Swift</option>
-                <option value="Java">Java</option>
-                <option value="C++">C++</option>
-              </select>
-            </div>
-              <div>
-                <label
-                  htmlFor="label"
-                  className="mb-2 block text-sm font-semibold text-slate-300"
-                >
-                  Issue label
-                </label>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative min-w-0 flex-1">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-500"
+                  >
+                    ⌕
+                  </span>
 
-                <select
-                  id="label"
-                  value={label}
-                  onChange={(event) => setLabel(event.target.value)}
-                  className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
+                  <input
+                    id="query"
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Try Python, documentation, bug fixes..."
+                    className="w-full rounded-xl border border-white/10 bg-[#101626] py-4 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-500 focus:border-cyan-300 sm:text-base"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-xl bg-cyan-300 px-6 py-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60 sm:min-w-40"
                 >
-                  <option value="">Any label</option>
-                  <option value="good first issue">
-                    Good first issue
-                  </option>
-                  <option value="help wanted">Help wanted</option>
-                  <option value="bug">Bug</option>
-                  <option value="documentation">
-                    Documentation
-                  </option>
-                </select>
+                  {loading ? "Searching..." : "Find issues →"}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-7">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-bold text-slate-100">
+                    Refine your search
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Combine filters to find relevant issues.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-400 transition hover:bg-white/5 hover:text-cyan-200"
+                >
+                  Reset filters
+                </button>
               </div>
 
-              <div>
-                <label
-                  htmlFor="level"
-                  className="mb-2 block text-sm font-semibold text-slate-300"
-                >
-                  Suggested skill level
-                </label>
+              <div className="grid grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div className="min-w-0">
+                  <label htmlFor="language" className={LABEL_CLASS}>
+                    Programming language
+                  </label>
 
-                <div>
-                  <label
-                    htmlFor="age"
-                    className="mb-2 block text-sm font-semibold text-slate-300"
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value)}
+                    className={SELECT_CLASS}
                   >
-                    When was it created?
+                    <option value="">Any language</option>
+                    {LANGUAGES.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="min-w-0">
+                  <label htmlFor="label" className={LABEL_CLASS}>
+                    Issue label
+                  </label>
+
+                  <select
+                    id="label"
+                    value={label}
+                    onChange={(event) => setLabel(event.target.value)}
+                    className={SELECT_CLASS}
+                  >
+                    <option value="">Any label</option>
+                    <option value="good first issue">
+                      Good first issue
+                    </option>
+                    <option value="help wanted">Help wanted</option>
+                    <option value="bug">Bug</option>
+                    <option value="documentation">
+                      Documentation
+                    </option>
+                  </select>
+                </div>
+
+                <div className="min-w-0">
+                  <label htmlFor="level" className={LABEL_CLASS}>
+                    Suggested skill level
+                  </label>
+
+                  <select
+                    id="level"
+                    value={level}
+                    onChange={(event) =>
+                      setLevel(event.target.value as LevelFilter)
+                    }
+                    className={SELECT_CLASS}
+                  >
+                    <option value="all">Any level</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="unspecified">Unspecified</option>
+                  </select>
+                </div>
+
+                <div className="min-w-0">
+                  <label htmlFor="age" className={LABEL_CLASS}>
+                    Creation date
                   </label>
 
                   <select
@@ -240,7 +345,7 @@ export default function Home() {
                     onChange={(event) =>
                       setAge(event.target.value as IssueAgeFilter)
                     }
-                    className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
+                    className={SELECT_CLASS}
                   >
                     <option value="any">Any time</option>
                     <option value="12h">Last 12 hours</option>
@@ -252,132 +357,135 @@ export default function Home() {
                     <option value="2w">Last 2 weeks</option>
                     <option value="1m">Last 1 month</option>
                     <option value="2m">Last 2 months</option>
-                    <option value="older">Older (3 months–1 year)</option>
+                    <option value="older">
+                      Older: 3 months–1 year
+                    </option>
                   </select>
                 </div>
 
-                    <div>
-                      <label
-                        htmlFor="status"
-                        className="mb-2 block text-sm font-semibold text-slate-300"
-                      >
-                        Issue status
-                      </label>
+                <div className="min-w-0">
+                  <label htmlFor="status" className={LABEL_CLASS}>
+                    Issue status
+                  </label>
 
-                      <select
-                        id="status"
-                        value={status}
-                        onChange={(event) =>
-                          setStatus(event.target.value as IssueStatusFilter)
-                        }
-                        className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
-                      >
-                        <option value="open">Open</option>
-                        <option value="closed">Closed</option>
-                        <option value="all">Open and closed</option>
-                      </select>
-                    </div>
-
-                <select
-                  id="level"
-                  value={level}
-                  onChange={(event) =>
-                    setLevel(event.target.value as LevelFilter)
-                  }
-                  className="w-full rounded-xl border border-white/15 bg-[#101626] px-4 py-3 outline-none focus:border-cyan-300"
-                >
-                  <option value="all">Any level</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                  <option value="unspecified">Unspecified</option>
-                </select>
+                  <select
+                    id="status"
+                    value={status}
+                    onChange={(event) =>
+                      setStatus(event.target.value as IssueStatusFilter)
+                    }
+                    className={SELECT_CLASS}
+                  >
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                    <option value="all">Any</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-6 w-full rounded-xl bg-cyan-300 px-6 py-4 font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-wait disabled:opacity-60 sm:w-auto"
-            >
-              {loading ? "Searching..." : "Find issues"}
-              {!loading && <span aria-hidden="true"> →</span>}
-            </button>
+              <p className="mt-5 text-xs leading-5 text-slate-500">
+                Search results come from GitHub. Skill levels are
+                estimates based on labels, not guarantees.
+              </p>
+            </div>
           </form>
 
           <section className="mt-10" aria-live="polite">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-xl font-bold">Explore issues</h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold sm:text-2xl">
+                  Explore issues
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Opportunities from public GitHub repositories
+                </p>
+              </div>
 
               {searched && !loading && !error && (
-                <span className="text-sm text-slate-400">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400">
                   {issues.length} shown
-                  {totalCount > 0
-                    ? ` · ${totalCount} GitHub matches before skill filtering`
-                    : ""}
+                  {totalCount > 0 ? ` · ${totalCount} total matches` : ""}
                 </span>
               )}
             </div>
 
             {loading ? (
-              <div className="mt-4 rounded-2xl border border-white/10 p-8 text-center text-slate-300">
-                Searching public GitHub issues...
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-10 text-center">
+                <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300" />
+                <p className="mt-4 font-semibold">
+                  Searching GitHub...
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Finding issues for your selected filters.
+                </p>
               </div>
             ) : error ? (
               <div
                 role="alert"
-                className="mt-4 rounded-2xl border border-red-400/30 bg-red-400/5 p-6 text-red-200"
+                className="rounded-2xl border border-red-400/20 bg-red-400/5 p-6"
               >
-                <p className="font-semibold">
+                <p className="font-semibold text-red-200">
                   We couldn&apos;t load issues
                 </p>
-                <p className="mt-2 text-sm">{error}</p>
-
+                <p className="mt-2 text-sm leading-6 text-red-200/70">
+                  {error}
+                </p>
                 <button
                   type="button"
                   onClick={() => setError("")}
-                  className="mt-4 rounded-lg border border-red-200/30 px-3 py-2 text-sm hover:bg-red-200/10"
+                  className="mt-4 rounded-lg border border-red-200/20 px-3 py-2 text-sm text-red-100 hover:bg-red-200/5"
                 >
                   Dismiss
                 </button>
               </div>
             ) : issues.length > 0 ? (
-              <div className="mt-4 grid gap-4">
+              <div className="grid gap-4">
                 {issues.map((issue) => (
                   <article
                     key={issue.id}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition hover:border-cyan-300/40"
+                    className="rounded-2xl border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6"
                   >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs capitalize ${
-                          issue.state === "open"
-                            ? "bg-emerald-400/10 text-emerald-300"
-                            : "bg-slate-400/10 text-slate-300"
-                        }`}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <a
+                        href={issue.repositoryUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="break-all text-sm font-semibold text-cyan-200 hover:underline"
                       >
-                        {issue.state}
-                      </span>
+                        {issue.repository}
+                      </a>
 
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs capitalize text-slate-300">
-                        Suggested: {issue.level}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                            issue.state === "open"
+                              ? "bg-emerald-400/10 text-emerald-300"
+                              : "bg-slate-400/10 text-slate-300"
+                          }`}
+                        >
+                          {issue.state}
+                        </span>
+                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-slate-400">
+                          {issue.level}
+                        </span>
+                      </div>
                     </div>
 
                     <a
                       href={issue.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-3 block text-lg font-bold hover:text-cyan-300"
+                      className="mt-4 block text-lg font-bold leading-7 transition hover:text-cyan-200 sm:text-xl"
                     >
                       {issue.title}
+                      <span className="ml-2 inline-block text-sm text-slate-500">
+                        #{issue.number}
+                      </span>
                     </a>
 
                     <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-400">
-                      {(issue.body ?? "No description provided.").slice(
-                        0,
-                        280,
-                      )}
+                      {(issue.body ?? "No description provided.")
+                        .slice(0, 280)}
                       {(issue.body?.length ?? 0) > 280 ? "…" : ""}
                     </p>
 
@@ -386,7 +494,7 @@ export default function Home() {
                         {issue.labels.slice(0, 6).map((item) => (
                           <span
                             key={item.name}
-                            className="rounded-md border border-white/10 px-2 py-1 text-xs text-slate-300"
+                            className="rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1 text-xs text-slate-300"
                           >
                             {item.name}
                           </span>
@@ -394,60 +502,71 @@ export default function Home() {
                       </div>
                     )}
 
-                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-500">
-                      <span>#{issue.number}</span>
+                    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/5 pt-4 text-xs text-slate-500">
                       <span>by {issue.author}</span>
                       <span>{issue.comments} comments</span>
                       <span>
-                        Created {new Date(issue.createdAt).toLocaleDateString()}
+                        Created{" "}
+                        {new Date(issue.createdAt).toLocaleDateString()}
                       </span>
                       <span>
                         Updated{" "}
                         {new Date(issue.updatedAt).toLocaleDateString()}
                       </span>
-
                       <a
                         href={issue.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-cyan-300 hover:underline"
+                        className="font-semibold text-cyan-300 hover:underline"
                       >
-                        View original issue ↗
+                        View issue ↗
                       </a>
                     </div>
                   </article>
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-2xl border border-dashed border-white/15 p-8 text-center sm:p-12">
-                <div className="text-3xl" aria-hidden="true">
+              <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-12 text-center sm:py-16">
+                <div
+                  className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl text-cyan-200"
+                  aria-hidden="true"
+                >
                   ⌕
                 </div>
 
-                <h3 className="mt-3 text-lg font-bold">
+                <h3 className="mt-4 text-lg font-bold">
                   {searched
                     ? "No matching issues found"
                     : "Your next project awaits"}
                 </h3>
 
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
                   {searched
-                    ? "Try another keyword or remove a filter. Labels can vary between repositories."
-                    : "Search by topic, choose an issue label and skill level, and explore public repositories."}
+                    ? "Try changing your keywords or removing one or more filters."
+                    : "Enter a topic, select your filters, and search public GitHub issues."}
                 </p>
               </div>
             )}
 
-            <p className="mt-4 text-xs leading-5 text-slate-500">
-              Skill levels are estimated from issue labels, not guarantees.
-              Always review the original issue and repository contribution
-              guidelines before starting.
+            <p className="mt-5 text-xs leading-5 text-slate-600">
+              Always read the original issue and the repository&apos;s
+              contribution guidelines before starting work.
             </p>
           </section>
         </section>
 
         <footer className="border-t border-white/10 py-6 text-sm text-slate-500">
-          Issue Scout · Open source, built for contributors.
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>Issue Scout · Open source, built for contributors.</span>
+            <a
+              href="https://github.com/sharmao07/issue-scout"
+              target="_blank"
+              rel="noreferrer"
+              className="transition hover:text-cyan-200"
+            >
+              View source on GitHub ↗
+            </a>
+          </div>
         </footer>
       </div>
     </main>
