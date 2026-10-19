@@ -22,7 +22,12 @@ type IssueStatusFilter = "open" | "closed" | "all";
 
 type SearchResponse = {
   total_count: number;
+  available_count: number;
+  total_pages: number;
+  page: number;
+  per_page: number;
   returned_count: number;
+  incomplete_results?: boolean;
   issues: ScoutIssue[];
 };
 
@@ -68,7 +73,7 @@ const LANGUAGES = [
 ];
 
 const SELECT_CLASS =
-  "w-full min-w-0 appearance-none rounded-xl border border-white/10 bg-[#101626] px-4 py-3.5 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/10";
+  "w-full min-w-0 rounded-xl border border-white/10 bg-[#101626] px-4 py-3.5 text-sm text-slate-100 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/10";
 
 const LABEL_CLASS =
   "mb-2.5 block text-sm font-semibold text-slate-300";
@@ -83,27 +88,31 @@ export default function Home() {
 
   const [issues, setIssues] = useState<ScoutIssue[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [availableCount, setAvailableCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function runSearch(requestedPage: number) {
+    const safePage = Math.max(1, Math.min(20, requestedPage));
 
     setLoading(true);
     setError("");
     setSearched(true);
     setIssues([]);
-    setTotalCount(0);
 
     try {
       const params = new URLSearchParams({
         q: query.trim(),
+        language,
         label,
         level,
-        language,
         age,
         status,
+        page: String(safePage),
       });
 
       const response = await fetch(
@@ -138,9 +147,25 @@ export default function Home() {
           ? data.total_count
           : data.issues.length,
       );
+      setAvailableCount(
+        typeof data.available_count === "number"
+          ? data.available_count
+          : data.issues.length,
+      );
+      setTotalPages(
+        typeof data.total_pages === "number"
+          ? Math.max(1, Math.min(20, data.total_pages))
+          : 1,
+      );
+      setPage(
+        typeof data.page === "number" ? data.page : safePage,
+      );
     } catch (reason) {
       setIssues([]);
       setTotalCount(0);
+      setAvailableCount(0);
+      setTotalPages(1);
+      setPage(1);
 
       setError(
         reason instanceof Error
@@ -152,6 +177,11 @@ export default function Home() {
     }
   }
 
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void runSearch(1);
+  }
+
   function resetFilters() {
     setQuery("");
     setLanguage("");
@@ -159,8 +189,13 @@ export default function Home() {
     setLevel("all");
     setAge("any");
     setStatus("open");
+
     setIssues([]);
     setTotalCount(0);
+    setAvailableCount(0);
+    setTotalPages(1);
+    setPage(1);
+
     setError("");
     setSearched(false);
   }
@@ -385,7 +420,7 @@ export default function Home() {
 
               <p className="mt-5 text-xs leading-5 text-slate-500">
                 Search results come from GitHub. Skill levels are
-                estimates based on labels, not guarantees.
+                estimates based on labels and issue text, not guarantees.
               </p>
             </div>
           </form>
@@ -403,8 +438,7 @@ export default function Home() {
 
               {searched && !loading && !error && (
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400">
-                  {issues.length} shown
-                  {totalCount > 0 ? ` · ${totalCount} total matches` : ""}
+                  {issues.length} shown · Page {page} of {totalPages}
                 </span>
               )}
             </div>
@@ -430,6 +464,7 @@ export default function Home() {
                 <p className="mt-2 text-sm leading-6 text-red-200/70">
                   {error}
                 </p>
+
                 <button
                   type="button"
                   onClick={() => setError("")}
@@ -465,6 +500,7 @@ export default function Home() {
                         >
                           {issue.state}
                         </span>
+
                         <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-slate-400">
                           {issue.level}
                         </span>
@@ -544,6 +580,49 @@ export default function Home() {
                   {searched
                     ? "Try changing your keywords or removing one or more filters."
                     : "Enter a topic, select your filters, and search public GitHub issues."}
+                </p>
+              </div>
+            )}
+
+            {searched && !loading && !error && (
+              <div className="mt-6 space-y-3">
+                {totalPages > 1 && (
+                  <nav
+                    aria-label="Issue result pages"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                  >
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => void runSearch(page - 1)}
+                      className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      ← Previous
+                    </button>
+
+                    <span className="text-sm text-slate-400">
+                      Page {page} of {totalPages}
+                      <span className="hidden sm:inline">
+                        {" "}· Up to 50 per page
+                      </span>
+                    </span>
+
+                    <button
+                      type="button"
+                      disabled={page >= totalPages}
+                      onClick={() => void runSearch(page + 1)}
+                      className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Next →
+                    </button>
+                  </nav>
+                )}
+
+                <p className="text-xs leading-5 text-slate-500">
+                  GitHub reports {totalCount.toLocaleString()} matching
+                  results. Issue Scout can access up to{" "}
+                  {availableCount.toLocaleString()} results for this
+                  search, with a maximum of 1,000 per query.
                 </p>
               </div>
             )}
