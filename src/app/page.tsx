@@ -1,10 +1,21 @@
 
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import IssueDetails from "@/components/IssueDetails";
 import type { LevelFilter, ScoutIssue } from "@/types/issue";
+import {
+  buildSearchUrl,
+  parseSearchUrl,
+  type SearchUrlState,
+} from "@/lib/search-url";
 
 type IssueAgeFilter =
   | "any"
@@ -150,6 +161,10 @@ export default function Home() {
   const [resultsView, setResultsView] = useState<ResultsView>("search");
   const [selectedIssue, setSelectedIssue] =
     useState<ScoutIssue | null>(null);
+  const [shareUrl, setShareUrl] = useState("");
+  const [copyLinkMessage, setCopyLinkMessage] = useState("");
+
+  const hasRestoredSearchUrl = useRef(false);  
 
   // Restore bookmarks after the browser has mounted the page.
   useEffect(() => {
@@ -229,8 +244,25 @@ export default function Home() {
     setResultsView("search");
   }
 
-  async function runSearch(requestedPage: number) {
-    const safePage = Math.max(1, Math.min(20, requestedPage));
+  const runSearch = useCallback(
+  async (
+    requestedPage: number,
+    stateOverride?: SearchUrlState,
+  ) => {
+    const safePage = Math.max(
+      1,
+      Math.min(20, requestedPage),
+    );
+
+    const activeState: SearchUrlState = stateOverride ?? {
+      query,
+      language,
+      label,
+      level,
+      age,
+      status,
+      page: safePage,
+    };
 
     setLoading(true);
     setError("");
@@ -240,12 +272,12 @@ export default function Home() {
 
     try {
       const params = new URLSearchParams({
-        q: query.trim(),
-        language,
-        label,
-        level,
-        age,
-        status,
+        q: activeState.query.trim(),
+        language: activeState.language,
+        label: activeState.label,
+        level: activeState.level,
+        age: activeState.age,
+        status: activeState.status,
         page: String(safePage),
       });
 
@@ -268,7 +300,8 @@ export default function Home() {
         !Array.isArray(data.issues)
       ) {
         const message =
-          "error" in data && typeof data.error === "string"
+          "error" in data &&
+          typeof data.error === "string"
             ? data.error
             : "Issue search failed. Please try again.";
 
@@ -291,12 +324,17 @@ export default function Home() {
 
       setTotalPages(
         typeof data.total_pages === "number"
-          ? Math.max(1, Math.min(20, data.total_pages))
+          ? Math.max(
+              1,
+              Math.min(20, data.total_pages),
+            )
           : 1,
       );
 
       setPage(
-        typeof data.page === "number" ? data.page : safePage,
+        typeof data.page === "number"
+          ? data.page
+          : safePage,
       );
     } catch (reason) {
       setIssues([]);
@@ -313,12 +351,65 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }
+  },
+  [query, language, label, level, age, status],
+);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void runSearch(1);
   }
+
+  useEffect(() => {
+  if (hasRestoredSearchUrl.current) {
+    return;
+  }
+
+  hasRestoredSearchUrl.current = true;
+
+  const { state, autoSearch } = parseSearchUrl(
+    window.location.search,
+  );
+
+  setQuery(state.query);
+  setLanguage(state.language);
+  setLabel(state.label);
+  setLevel(state.level);
+  setAge(state.age);
+  setStatus(state.status);
+  setPage(state.page);
+
+  if (autoSearch) {
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentionally trigger the initial search for a shared URL.
+  void runSearch(state.page, state);
+  }
+}, [runSearch]);
+
+async function copySearchLink() {
+  const url = buildSearchUrl(
+    {
+      query,
+      language,
+      label,
+      level,
+      age,
+      status,
+      page: searched ? page : 1,
+    },
+    window.location.origin,
+  );
+
+  setShareUrl(url);
+
+  try {
+    await navigator.clipboard.writeText(url);
+    setCopyLinkMessage("Search link copied to clipboard.");
+  } catch {
+    setCopyLinkMessage(
+      "Automatic copying is unavailable. Copy the URL below.",
+    );
+  }
+}
 
   function resetFilters() {
     setQuery("");
@@ -542,14 +633,45 @@ export default function Home() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-400 transition hover:bg-white/5 hover:text-cyan-200"
-                >
-                  Reset filters
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void copySearchLink()}
+                    className="rounded-lg border border-cyan-300/30 px-3 py-2 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/10"
+                  >
+                    Copy search link ↗
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-400 transition hover:bg-white/5 hover:text-cyan-200"
+                  >
+                    Reset filters
+                  </button>
+                </div>
               </div>
+
+              {copyLinkMessage && (
+                <div
+                  role="status"
+                  className="mb-5 rounded-lg border border-white/10 bg-white/2 p-4"
+                >
+                  <p className="text-sm text-slate-300">
+                  </p>
+
+                  {shareUrl && (
+                    <input
+                      type="url"
+                      aria-label="Shareable search URL"
+                      readOnly
+                      value={shareUrl}
+                      onFocus={(event) => event.currentTarget.select()}
+                      className="mt-3 w-full min-w-0 rounded-lg border border-white/10 bg-[#101626] px-3 py-3 text-sm text-cyan-200 outline-none focus:border-cyan-300"
+                    />
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 <div className="min-w-0">
