@@ -16,6 +16,7 @@ import {
   parseSearchUrl,
   type SearchUrlState,
 } from "@/lib/search-url";
+import { parseIssuePreviewUrl } from "@/lib/issue-url";
 
 type IssueAgeFilter =
   | "any"
@@ -91,7 +92,8 @@ const SELECT_CLASS =
 const LABEL_CLASS =
   "mb-2.5 block text-sm font-semibold text-slate-300";
 
-const SAVED_ISSUES_STORAGE_KEY = "issue-scout:saved-issues:v1";
+const SAVED_ISSUES_STORAGE_KEY =
+  "issue-scout:saved-issues:v1";
 
 function isScoutIssue(value: unknown): value is ScoutIssue {
   if (typeof value !== "object" || value === null) {
@@ -158,13 +160,18 @@ export default function Home() {
 
   const [savedIssues, setSavedIssues] = useState<ScoutIssue[]>([]);
   const [savedIssuesReady, setSavedIssuesReady] = useState(false);
-  const [resultsView, setResultsView] = useState<ResultsView>("search");
+  const [resultsView, setResultsView] =
+    useState<ResultsView>("search");
+
   const [selectedIssue, setSelectedIssue] =
     useState<ScoutIssue | null>(null);
+
   const [shareUrl, setShareUrl] = useState("");
   const [copyLinkMessage, setCopyLinkMessage] = useState("");
 
-  const hasRestoredSearchUrl = useRef(false);  
+  const [directIssueError, setDirectIssueError] = useState("");
+
+  const hasRestoredSearchUrl = useRef(false);
 
   // Restore bookmarks after the browser has mounted the page.
   useEffect(() => {
@@ -242,174 +249,244 @@ export default function Home() {
     setError("");
     setSearched(false);
     setResultsView("search");
+    setCopyLinkMessage("");
+    setShareUrl("");
   }
 
   const runSearch = useCallback(
-  async (
-    requestedPage: number,
-    stateOverride?: SearchUrlState,
-  ) => {
-    const safePage = Math.max(
-      1,
-      Math.min(20, requestedPage),
-    );
-
-    const activeState: SearchUrlState = stateOverride ?? {
-      query,
-      language,
-      label,
-      level,
-      age,
-      status,
-      page: safePage,
-    };
-
-    setLoading(true);
-    setError("");
-    setSearched(true);
-    setResultsView("search");
-    setIssues([]);
-
-    try {
-      const params = new URLSearchParams({
-        q: activeState.query.trim(),
-        language: activeState.language,
-        label: activeState.label,
-        level: activeState.level,
-        age: activeState.age,
-        status: activeState.status,
-        page: String(safePage),
-      });
-
-      const response = await fetch(
-        `/api/issues?${params.toString()}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
+    async (
+      requestedPage: number,
+      stateOverride?: SearchUrlState,
+    ) => {
+      const safePage = Math.max(
+        1,
+        Math.min(20, requestedPage),
       );
 
-      const data = (await response.json()) as
-        | SearchResponse
-        | SearchError;
+      const activeState: SearchUrlState =
+        stateOverride ?? {
+          query,
+          language,
+          label,
+          level,
+          age,
+          status,
+          page: safePage,
+        };
 
-      if (
-        !response.ok ||
-        !("issues" in data) ||
-        !Array.isArray(data.issues)
-      ) {
-        const message =
-          "error" in data &&
-          typeof data.error === "string"
-            ? data.error
-            : "Issue search failed. Please try again.";
-
-        throw new Error(message);
-      }
-
-      setIssues(data.issues);
-
-      setTotalCount(
-        typeof data.total_count === "number"
-          ? data.total_count
-          : data.issues.length,
-      );
-
-      setAvailableCount(
-        typeof data.available_count === "number"
-          ? data.available_count
-          : data.issues.length,
-      );
-
-      setTotalPages(
-        typeof data.total_pages === "number"
-          ? Math.max(
-              1,
-              Math.min(20, data.total_pages),
-            )
-          : 1,
-      );
-
-      setPage(
-        typeof data.page === "number"
-          ? data.page
-          : safePage,
-      );
-    } catch (reason) {
+      setLoading(true);
+      setError("");
+      setSearched(true);
+      setResultsView("search");
       setIssues([]);
-      setTotalCount(0);
-      setAvailableCount(0);
-      setTotalPages(1);
-      setPage(1);
 
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Something went wrong. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  },
-  [query, language, label, level, age, status],
-);
+      try {
+        const params = new URLSearchParams({
+          query: activeState.query,
+          language: activeState.language,
+          label: activeState.label,
+          level: activeState.level,
+          age: activeState.age,
+          status: activeState.status,
+          page: String(activeState.page),
+        });
+
+        const response = await fetch(
+          `/api/issues?${params.toString()}`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+          },
+        );
+
+        const data = (await response.json()) as
+          | SearchResponse
+          | SearchError;
+
+        if (
+          !response.ok ||
+          !("issues" in data) ||
+          !Array.isArray(data.issues)
+        ) {
+          const message =
+            "error" in data &&
+            typeof data.error === "string"
+              ? data.error
+              : "Issue search failed. Please try again.";
+
+          throw new Error(message);
+        }
+
+        setIssues(data.issues);
+
+        setTotalCount(
+          typeof data.total_count === "number"
+            ? data.total_count
+            : data.issues.length,
+        );
+
+        setAvailableCount(
+          typeof data.available_count === "number"
+            ? data.available_count
+            : data.issues.length,
+        );
+
+        setTotalPages(
+          typeof data.total_pages === "number"
+            ? Math.max(
+                1,
+                Math.min(20, data.total_pages),
+              )
+            : 1,
+        );
+
+        setPage(
+          typeof data.page === "number"
+            ? data.page
+            : safePage,
+        );
+      } catch (reason) {
+        setIssues([]);
+        setTotalCount(0);
+        setAvailableCount(0);
+        setTotalPages(1);
+        setPage(1);
+
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : "Something went wrong. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [query, language, label, level, age, status],
+  );
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void runSearch(1);
   }
 
+  // Restore shared-search filters and direct issue links on first load.
   useEffect(() => {
-  if (hasRestoredSearchUrl.current) {
+    if (hasRestoredSearchUrl.current) {
+      return;
+    }
+
+    hasRestoredSearchUrl.current = true;
+
+    const search = window.location.search;
+    const params = new URLSearchParams(search);
+    const { state, autoSearch } = parseSearchUrl(search);
+    const issueTarget = parseIssuePreviewUrl(search);
+
+    setQuery(state.query);
+    setLanguage(state.language);
+    setLabel(state.label);
+    setLevel(state.level);
+    setAge(state.age);
+    setStatus(state.status);
+    setPage(state.page);
+
+    // If the URL explicitly contains an invalid issue parameter,
+    // explain the problem rather than silently treating it as a search.
+    if (params.has("issue") && !issueTarget) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Report an invalid direct link parsed from the browser URL.
+    setDirectIssueError(
+      "This direct issue link is invalid. Check the repository and issue number.",
+    );
     return;
   }
+    // A direct issue URL takes priority over a shared-search URL.
+    if (issueTarget) {
+      const target = issueTarget;
+      async function loadDirectIssue() {
+        const issueParams = new URLSearchParams({
+          owner: target.owner,
+          repo: target.repo,
+          issue_number: String(target.issueNumber),
+        });
 
-  hasRestoredSearchUrl.current = true;
+        try {
+          const response = await fetch(
+            `/api/issue-preview?${issueParams.toString()}`,
+            {
+              cache: "no-store",
+              headers: {
+                Accept: "application/json",
+              },
+            },
+          );
 
-  const { state, autoSearch } = parseSearchUrl(
-    window.location.search,
-  );
+          const result = (await response.json()) as {
+            issue?: unknown;
+            error?: string;
+          };
 
-  setQuery(state.query);
-  setLanguage(state.language);
-  setLabel(state.label);
-  setLevel(state.level);
-  setAge(state.age);
-  setStatus(state.status);
-  setPage(state.page);
+          const directIssue =
+            "issue" in result ? result.issue : undefined;
 
-  if (autoSearch) {
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentionally trigger the initial search for a shared URL.
-  void runSearch(state.page, state);
-  }
-}, [runSearch]);
+          if (
+            !response.ok ||
+            !isScoutIssue(directIssue)
+          ) {
+            const message =
+              typeof result.error === "string"
+                ? result.error
+                : "Unable to open this issue preview.";
 
-async function copySearchLink() {
-  const url = buildSearchUrl(
-    {
-      query,
-      language,
-      label,
-      level,
-      age,
-      status,
-      page: searched ? page : 1,
-    },
-    window.location.origin,
-  );
+            throw new Error(message);
+          }
 
-  setShareUrl(url);
+          setSelectedIssue(directIssue);
+          setDirectIssueError("");
+        } catch (reason) {
+          setDirectIssueError(
+            reason instanceof Error
+              ? reason.message
+              : "Unable to load this issue. Please try again.",
+          );
+        }
+      }
 
-  try {
-    await navigator.clipboard.writeText(url);
-    setCopyLinkMessage("Search link copied to clipboard.");
-  } catch {
-    setCopyLinkMessage(
-      "Automatic copying is unavailable. Copy the URL below.",
+      void loadDirectIssue();
+      return;
+    }
+
+    if (autoSearch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentionally run the initial search for a shared-search URL.
+      void runSearch(state.page, state);
+    }
+  }, [runSearch]);
+
+  async function copySearchLink() {
+    const url = buildSearchUrl(
+      {
+        query,
+        language,
+        label,
+        level,
+        age,
+        status,
+        page: searched ? page : 1,
+      },
+      window.location.origin,
     );
+
+    setShareUrl(url);
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyLinkMessage("Search link copied to clipboard.");
+    } catch {
+      setCopyLinkMessage(
+        "Automatic copying is unavailable. Copy the URL below.",
+      );
+    }
   }
-}
 
   function resetFilters() {
     setQuery("");
@@ -428,6 +505,9 @@ async function copySearchLink() {
     setError("");
     setSearched(false);
     setResultsView("search");
+    setShareUrl("");
+    setCopyLinkMessage("");
+    setDirectIssueError("");
   }
 
   const displayedIssues =
@@ -457,6 +537,29 @@ async function copySearchLink() {
             GitHub <span aria-hidden="true">↗</span>
           </a>
         </header>
+
+        {directIssueError && (
+          <div
+            role="alert"
+            className="mt-5 rounded-lg border border-red-400/20 bg-red-400/5 p-5"
+          >
+            <p className="font-semibold text-red-200">
+              Could not open the shared issue
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              {directIssueError}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setDirectIssueError("")}
+              className="mt-3 text-sm font-semibold text-cyan-200 hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         <section className="pb-16 pt-12 sm:pt-16">
           <div className="mb-9 max-w-3xl">
@@ -658,6 +761,7 @@ async function copySearchLink() {
                   className="mb-5 rounded-lg border border-white/10 bg-white/2 p-4"
                 >
                   <p className="text-sm text-slate-300">
+                    {copyLinkMessage}
                   </p>
 
                   {shareUrl && (
