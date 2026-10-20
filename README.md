@@ -157,6 +157,12 @@ Bug reports, feature ideas, documentation improvements, and pull requests are we
 
 For feature requests, describe the problem you are trying to solve as well as your suggested solution.
 
+## Support and contact
+
+Have a question, found a bug, or want to suggest an improvement? You can reach the Issue Scout maintainer at **sharma.support07@gmail.com** or [open an issue on GitHub](https://github.com/sharmao07/issue-scout/issues).
+
+Issue Scout uses GitHub's public Search API to help developers discover open-source contribution opportunities. Search availability and rate limits are controlled by GitHub.
+
 ## AI assistance disclosure
 
 AI tools have assisted with parts of this project's debugging,
