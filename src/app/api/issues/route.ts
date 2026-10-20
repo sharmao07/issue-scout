@@ -47,6 +47,7 @@ type GitHubSearchResponse = {
 const PAGE_SIZE = 50;
 const MAX_SEARCH_RESULTS = 1000;
 const MAX_PAGES = MAX_SEARCH_RESULTS / PAGE_SIZE;
+const MIN_ISSUE_AGE_MS = 30 * 60 * 1000;
 
 const ALLOWED_AGES: IssueAgeFilter[] = [
   "any",
@@ -286,7 +287,14 @@ export async function GET(request: Request) {
       ? Math.max(1, Math.min(MAX_PAGES, parsedPage))
       : 1;
 
-    const queryParts = ["is:issue"];
+    const minimumIssueAgeCutoff = new Date(
+      Date.now() - MIN_ISSUE_AGE_MS,
+    );
+
+    const queryParts = [
+      "is:issue",
+      `created:<=${formatGitHubTimestamp(minimumIssueAgeCutoff)}`,
+    ];
 
     // Filter issue state before pagination.
     if (status !== "all") {
@@ -368,7 +376,10 @@ export async function GET(request: Request) {
     // GitHub's search endpoint can also return pull requests.
     // Keep actual issues only.
     const actualIssues = data.items.filter(
-      (item) => !item.pull_request,
+      (item) =>
+        !item.pull_request &&
+        Date.parse(item.created_at) <=
+          minimumIssueAgeCutoff.getTime(),
     );
 
     const issues: ScoutIssue[] = actualIssues.map((issue) => {

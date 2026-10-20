@@ -1,3 +1,4 @@
+
 import {
   afterEach,
   beforeEach,
@@ -99,11 +100,56 @@ describe("GET /api/issues", () => {
       String(fetchMock.mock.calls[0][0]),
     );
 
-    expect(requestedUrl.searchParams.get("q")).toBe(
-      "is:issue is:open",
+    const query = requestedUrl.searchParams.get("q") ?? "";
+
+    expect(query).toContain("is:issue");
+    expect(query).toContain("is:open");
+    expect(query).toMatch(
+      /created:<=\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/,
     );
+
     expect(requestedUrl.searchParams.get("per_page")).toBe("50");
     expect(requestedUrl.searchParams.get("page")).toBe("1");
+    expect(requestedUrl.searchParams.get("sort")).toBe("created");
+    expect(requestedUrl.searchParams.get("order")).toBe("desc");
+  });
+
+  it("excludes issues created less than 30 minutes ago", async () => {
+    const recentIssue = makeIssue({
+      id: 2,
+      number: 2,
+      title: "Created 2 minutes ago",
+      created_at: new Date(
+        Date.now() - 2 * 60 * 1000,
+      ).toISOString(),
+    });
+
+    const oldEnoughIssue = makeIssue({
+      id: 3,
+      number: 3,
+      title: "Created 35 minutes ago",
+      created_at: new Date(
+        Date.now() - 35 * 60 * 1000,
+      ).toISOString(),
+    });
+
+    fetchMock.mockResolvedValueOnce(
+      githubResponse([recentIssue, oldEnoughIssue]),
+    );
+
+    const response = await GET(
+      new Request("http://localhost/api/issues"),
+    );
+
+    expect(response.status).toBe(200);
+
+    const data = await response.json();
+
+    expect(data.issues).toHaveLength(1);
+    expect(data.issues[0].title).toBe(
+      "Created 35 minutes ago",
+    );
+    expect(data.returned_count).toBe(1);
   });
 
   it("combines search terms, filters, and pagination", async () => {
@@ -156,6 +202,7 @@ describe("GET /api/issues", () => {
     expect(query).toContain('label:"bug"');
     expect(query).toContain("language:Python");
     expect(query).toContain("created:>=");
+    expect(query).toContain("created:<=");
     expect(query).toContain('label:"good first issue"');
 
     expect(requestedUrl.searchParams.get("page")).toBe("2");
