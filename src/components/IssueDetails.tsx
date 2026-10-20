@@ -50,6 +50,40 @@ type RepositoryPayload = {
   contributionGuidesChecked: boolean;
 };
 
+
+type AvailabilityPayload = {
+  issue: {
+    number: number;
+    title: string;
+    url: string;
+    state: "open" | "closed";
+    locked: boolean;
+    activeLockReason: string | null;
+    assignees: Array<{
+      login: string;
+      url: string;
+    }>;
+    stateReason: string | null;
+    closedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    commentCount: number;
+    labels: Array<{
+      name: string;
+      color: string;
+    }>;
+  };
+  recentComments: Array<{
+    id: number;
+    url: string;
+    author: string;
+    body: string | null;
+    createdAt: string;
+  }>;
+  recentCommentsAvailable: boolean;
+};
+
+
 type ReadinessSignal = {
   name: string;
   score: number;
@@ -256,6 +290,17 @@ export default function IssueDetails({
 
   const [repositoryError, setRepositoryError] = useState("");
 
+    const [availabilityData, setAvailabilityData] =
+    useState<AvailabilityPayload | null>(null);
+
+    const [availabilityLoading, setAvailabilityLoading] =
+    useState(true);
+
+    const [availabilityError, setAvailabilityError] = useState("");
+
+    const [availabilityRefreshVersion, setAvailabilityRefreshVersion] =
+    useState(0);
+
   const checklistStorageKey =
     CHECKLIST_STORAGE_PREFIX + encodeURIComponent(issue.url);
 
@@ -440,6 +485,77 @@ export default function IssueDetails({
     return () => controller.abort();
   }, [issue.repository]);
 
+
+    useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadAvailability() {
+        const [owner = "", repo = ""] = issue.repository.split("/");
+
+        const params = new URLSearchParams({
+        owner,
+        repo,
+        issue_number: String(issue.number),
+        });
+
+        try {
+        const response = await fetch(
+            `/api/issue-availability?${params.toString()}`,
+            {
+            signal: controller.signal,
+            cache: "no-store",
+            headers: {
+                Accept: "application/json",
+            },
+            },
+        );
+
+        const result = (await response.json()) as
+            | AvailabilityPayload
+            | { error?: string };
+
+        if (
+            !response.ok ||
+            !("issue" in result) ||
+            !Array.isArray(result.recentComments)
+        ) {
+            throw new Error(
+            "error" in result && result.error
+                ? result.error
+                : "Current issue status could not be loaded.",
+            );
+        }
+
+        if (controller.signal.aborted) return;
+
+        setAvailabilityData(result);
+        setAvailabilityError("");
+        } catch (reason) {
+        if (controller.signal.aborted) return;
+
+        setAvailabilityData(null);
+        setAvailabilityError(
+            reason instanceof Error
+            ? reason.message
+            : "Unable to refresh the issue status.",
+        );
+        } finally {
+        if (!controller.signal.aborted) {
+            setAvailabilityLoading(false);
+        }
+        }
+    }
+
+    void loadAvailability();
+
+    return () => controller.abort();
+    }, [
+    issue.repository,
+    issue.number,
+    availabilityRefreshVersion,
+    ]);
+
+
   const completedSteps = checkedSteps.filter(Boolean).length;
 
   const completionPercent = Math.round(
@@ -460,6 +576,15 @@ export default function IssueDetails({
 
   const validPullRequestUrl =
     getValidPullRequestUrl(pullRequestUrl);
+
+   
+  function refreshAvailability() {
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+    setAvailabilityData(null);
+    setAvailabilityRefreshVersion((current) => current + 1);
+    }
+    
 
   function toggleStep(index: number) {
     setCheckedSteps((current) =>
@@ -595,6 +720,292 @@ export default function IssueDetails({
               </a>
             </div>
           </section>
+
+          
+            {/* Phase 4: live issue availability */}
+            <section
+            className="border-t border-white/10 pt-7"
+            aria-live="polite"
+            >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-200">
+                    [ 04 / Issue availability ]
+                </p>
+
+                <h3 className="mt-2 text-xl font-bold">
+                    Check before you contribute
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                    Refresh the issue directly from GitHub before starting work.
+                </p>
+                </div>
+
+                <button
+                type="button"
+                onClick={refreshAvailability}
+                disabled={availabilityLoading}
+                className="rounded-lg border border-white/15 px-3 py-2 text-sm font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                {availabilityLoading
+                    ? "Checking GitHub..."
+                    : "Refresh from GitHub ↻"}
+                </button>
+            </div>
+
+            {availabilityLoading && (
+                <div
+                role="status"
+                className="mt-5 rounded-lg border border-white/10 bg-white/2 p-5 text-sm text-slate-400"
+                >
+                Fetching the latest issue status from GitHub...
+                </div>
+            )}
+
+            {availabilityError && (
+                <div
+                role="alert"
+                className="mt-5 rounded-lg border border-red-400/20 bg-red-400/5 p-5"
+                >
+                <p className="font-semibold text-red-200">
+                    Could not refresh issue status
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                    {availabilityError}
+                </p>
+                <p className="mt-2 text-sm text-slate-400">
+                    Open the original GitHub issue to verify its current state.
+                </p>
+                </div>
+            )}
+
+            {availabilityData && !availabilityLoading && (
+                <div className="mt-5 space-y-4">
+                <div className="rounded-lg border border-white/10 bg-white/2 p-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                    <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        availabilityData.issue.state === "open"
+                            ? "bg-emerald-400/10 text-emerald-300"
+                            : "bg-amber-400/10 text-amber-200"
+                        }`}
+                    >
+                        {availabilityData.issue.state.toUpperCase()}
+                    </span>
+
+                    {availabilityData.issue.locked && (
+                        <span className="rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+                        LOCKED
+                        </span>
+                    )}
+                    </div>
+
+                    {availabilityData.issue.title !== issue.title && (
+                    <p className="mt-4 text-sm leading-6 text-amber-100">
+                        The issue title has changed since these search results were
+                        loaded. Current GitHub title:{" "}
+                        <span className="font-semibold">
+                        {availabilityData.issue.title}
+                        </span>
+                    </p>
+                    )}
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg border border-white/10 p-4">
+                        <p className="text-xs text-slate-500">
+                        Last updated on GitHub
+                        </p>
+                        <p className="mt-1 text-sm font-semibold">
+                        {formatDateTime(availabilityData.issue.updatedAt)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-lg border border-white/10 p-4">
+                        <p className="text-xs text-slate-500">
+                        Public comment count
+                        </p>
+                        <p className="mt-1 text-sm font-semibold tabular-nums">
+                        {availabilityData.issue.commentCount}
+                        </p>
+                    </div>
+                    </div>
+
+                    {availabilityData.issue.state === "closed" && (
+                    <div
+                        role="alert"
+                        className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/5 p-4"
+                    >
+                        <p className="font-semibold text-amber-100">
+                        This issue is closed.
+                        </p>
+
+                        {availabilityData.issue.stateReason && (
+                        <p className="mt-2 text-sm text-slate-300">
+                            GitHub close reason:{" "}
+                            {availabilityData.issue.stateReason.replace(/_/g, " ")}
+                        </p>
+                        )}
+
+                        {availabilityData.issue.closedAt && (
+                        <p className="mt-2 text-sm text-slate-400">
+                            Closed on{" "}
+                            {formatDateTime(availabilityData.issue.closedAt)}.
+                        </p>
+                        )}
+
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                        Review the discussion and linked pull requests before
+                        investing time in a solution.
+                        </p>
+                    </div>
+                    )}
+
+                    {availabilityData.issue.locked && (
+                    <div
+                        role="status"
+                        className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/5 p-4"
+                    >
+                        <p className="font-semibold text-amber-100">
+                        This discussion is locked.
+                        </p>
+
+                        {availabilityData.issue.activeLockReason && (
+                        <p className="mt-2 text-sm text-slate-300">
+                            Lock reason:{" "}
+                            {availabilityData.issue.activeLockReason}
+                        </p>
+                        )}
+
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                        You may be unable to comment on this issue.
+                        </p>
+                    </div>
+                    )}
+
+                    <div className="mt-5">
+                    <h4 className="font-semibold text-slate-100">
+                        Assigned contributors
+                    </h4>
+
+                    {availabilityData.issue.assignees.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                        {availabilityData.issue.assignees.map((assignee) => (
+                            <a
+                            key={assignee.login}
+                            href={assignee.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-md border border-white/10 px-3 py-2 text-sm font-semibold text-cyan-200 hover:border-cyan-300/40 hover:underline"
+                            >
+                            @{assignee.login} ↗
+                            </a>
+                        ))}
+                        </div>
+                    ) : (
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                        No assignee is listed on GitHub. This does not establish
+                        that the issue is unclaimed.
+                        </p>
+                    )}
+
+                    <p className="mt-3 text-xs leading-5 text-slate-500">
+                        Assignment information alone cannot confirm whether someone
+                        is actively working on this issue.
+                    </p>
+                    </div>
+
+                    {availabilityData.issue.labels.length > 0 && (
+                    <div className="mt-5">
+                        <h4 className="font-semibold text-slate-100">
+                        Current GitHub labels
+                        </h4>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                        {availabilityData.issue.labels.map((label) => (
+                            <span
+                            key={label.name}
+                            className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300"
+                            >
+                            {label.name}
+                            </span>
+                        ))}
+                        </div>
+                    </div>
+                    )}
+
+                    <a
+                    href={availabilityData.issue.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-5 inline-block text-sm font-semibold text-cyan-200 hover:underline"
+                    >
+                    Verify current issue on GitHub ↗
+                    </a>
+                </div>
+
+                <div className="rounded-lg border border-white/10 bg-white/2 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="font-semibold text-slate-100">
+                        Recent discussion
+                    </h4>
+
+                    <span className="text-xs text-slate-500">
+                        Latest 3 comments
+                    </span>
+                    </div>
+
+                    {!availabilityData.recentCommentsAvailable ? (
+                    <p className="mt-3 text-sm leading-6 text-slate-400">
+                        The current issue status loaded, but recent comments could
+                        not be retrieved. Check the original issue on GitHub.
+                    </p>
+                    ) : availabilityData.recentComments.length === 0 ? (
+                    <p className="mt-3 text-sm leading-6 text-slate-400">
+                        No public comments were returned for this issue.
+                    </p>
+                    ) : (
+                    <div className="mt-4 space-y-3">
+                        {availabilityData.recentComments.map((comment) => {
+                        const body = comment.body?.trim() ?? "";
+
+                        return (
+                            <article
+                            key={comment.id}
+                            className="rounded-lg border border-white/10 p-4"
+                            >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <a
+                                href={comment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm font-semibold text-cyan-200 hover:underline"
+                                >
+                                @{comment.author} ↗
+                                </a>
+
+                                <span className="text-xs text-slate-500">
+                                {formatDateTime(comment.createdAt)}
+                                </span>
+                            </div>
+
+                            <p className="mt-3 whitespace-pre-wrap wrap-break-words text-sm leading-6 text-slate-300">
+                                {body
+                                ? `${body.slice(0, 280)}${
+                                    body.length > 280 ? "…" : ""
+                                    }`
+                                : "This comment has no text content."}
+                            </p>
+                            </article>
+                        );
+                        })}
+                    </div>
+                    )}
+                </div>
+                </div>
+            )}
+            </section>
+
 
           {/* Phase 2: readiness evidence */}
           <section className="border-t border-white/10 pt-7">
