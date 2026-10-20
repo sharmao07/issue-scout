@@ -571,7 +571,7 @@ export default function Home() {
             </div>
 
             {loading ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-10 text-center">
+              <div className="rounded-2xl border border-white/10 bg-white/2 p-10 text-center">
                 <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300" />
                 <p className="mt-4 font-semibold">
                   Searching GitHub...
@@ -646,7 +646,7 @@ export default function Home() {
                       </span>
                     </a>
 
-                    <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-400">
+                    <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-slate-400">
                       {(issue.body ?? "No description provided.")
                         .slice(0, 280)}
                       {(issue.body?.length ?? 0) > 280 ? "…" : ""}
@@ -657,7 +657,7 @@ export default function Home() {
                         {issue.labels.slice(0, 6).map((item) => (
                           <span
                             key={item.name}
-                            className="rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1 text-xs text-slate-300"
+                            className="rounded-md border border-white/10 bg-white/2 px-2.5 py-1 text-xs text-slate-300"
                           >
                             {item.name}
                           </span>
@@ -689,7 +689,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-12 text-center sm:py-16">
+              <div className="rounded-2xl border border-dashed border-white/10 bg-white/2 px-6 py-12 text-center sm:py-16">
                 <div
                   className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl text-cyan-200"
                   aria-hidden="true"
@@ -716,7 +716,7 @@ export default function Home() {
                 {totalPages > 1 && (
                   <nav
                     aria-label="Issue result pages"
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-4"
                   >
                     <button
                       type="button"
