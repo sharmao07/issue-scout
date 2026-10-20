@@ -1,0 +1,47 @@
+[
+  {
+    "tagName": "A",
+    "className": "rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold transition hover:border-cyan-300/50 hover:bg-white/5",
+    "text": "GitHub ↗",
+    "rect": {
+      "x": 1221.453125,
+      "y": 24,
+      "width": 98.546875,
+      "height": 42,
+      "top": 24,
+      "right": 1320,
+      "bottom": 66,
+      "left": 1221.453125
+    }
+  },
+  {
+    "tagName": "DIV",
+    "className": "rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-12 text-center sm:py-16",
+    "text": "⌕\nYour next project awaits\n\nEnter a topic, select your filters, and search public GitHub issues.",
+    "rect": {
+      "x": 120,
+      "y": 1072,
+      "width": 1200,
+      "height": 254,
+      "top": 1072,
+      "right": 1320,
+      "bottom": 1326,
+      "left": 120
+    }
+  },
+  {
+    "tagName": "A",
+    "className": "transition hover:text-cyan-200",
+    "text": "View source on GitHub ↗",
+    "rect": {
+      "x": 1159.171875,
+      "y": 1455,
+      "width": 160.828125,
+      "height": 20,
+      "top": 1455,
+      "right": 1320,
+      "bottom": 1475,
+      "left": 1159.171875
+    }
+  }
+]

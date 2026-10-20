@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>body { margin:0; background:#f9fbfb; }</style>
+</head>
+<body>
+  <canvas id="c" width="1440" height="1152"></canvas>
+  <script>
+    const canvas = document.getElementById('c');
+    const gl = canvas.getContext('webgl2');
+
+    const vs = `#version 300 es
+    layout(location=0) in vec3 aPos;
+    layout(location=1) in vec2 aUV;
+    uniform mat4 uP, uV, uM;
+    out vec2 vUV;
+    void main() {
+      vUV = aUV;
+      gl_Position = uP * uV * uM * vec4(aPos, 1.0);
+    }`;
+
+    const fs = `#version 300 es
+    precision highp float;
+    in vec2 vUV;
+    uniform sampler2D uTex;
+    out vec4 fragColor;
+    void main() {
+      fragColor = texture(uTex, vUV);
+    }`;
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const img = new Image();
+    img.src = 'capture/webpage_full.png';
+    img.onload = () => {
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+
+      const f = 1880.0;
+      const fovy = 2.0 * Math.atan((1152 * 0.5) / f);
+      const aspect = 1440 / 1152;
+      const near = 10.0, far = 35000.0;
+
+      const p = new Float32Array(16);
+      const nf = 1.0 / (near - far);
+      const fVal = 1.0 / Math.tan(fovy / 2.0);
+      p[0] = fVal / aspect; p[5] = fVal; p[10] = (far + near) * nf; p[11] = -1; p[14] = (2 * far * near) * nf;
+
+      // Invert U so left-to-right is un-mirrored
+      const quad = new Float32Array([
+        -720,    0, 0,  1.0, 0.0, // top-left
+         720,    0, 0,  0.0, 0.0, // top-right
+         720, 6267, 0,  0.0, 1.0, // bottom-right
+        -720,    0, 0,  1.0, 0.0,
+         720, 6267, 0,  0.0, 1.0,
+        -720, 6267, 0,  1.0, 1.0  // bottom-left
+      ]);
+
+      const vao = gl.createVertexArray();
+      gl.bindVertexArray(vao);
+      const vbo = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 20, 0);
+      gl.enableVertexAttribArray(1);
+      gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 20, 12);
+
+      const rad = 56 * Math.PI / 180;
+      const dist = 1360;
+      const targetY = 420;
+      const eye = [0, targetY + dist * Math.sin(rad), dist * Math.cos(rad)];
+      const center = [0, targetY, 0];
+      const up = [0, 0, 1];
+
+      let z0 = eye[0] - center[0], z1 = eye[1] - center[1], z2 = eye[2] - center[2];
+      let len = 1.0 / Math.hypot(z0, z1, z2);
+      z0 *= len; z1 *= len; z2 *= len;
+
+      let x0 = up[1] * z2 - up[2] * z1;
+      let x1 = up[2] * z0 - up[0] * z2;
+      let x2 = up[0] * z1 - up[1] * z0;
+      len = 1.0 / Math.hypot(x0, x1, x2);
+      x0 *= len; x1 *= len; x2 *= len;
+
+      let y0 = z1 * x2 - z2 * x1;
+      let y1 = z2 * x0 - z0 * x2;
+      let y2 = z0 * x1 - z1 * x0;
+      len = 1.0 / Math.hypot(y0, y1, y2);
+      y0 *= len; y1 *= len; y2 *= len;
+
+      const v = new Float32Array([
+        x0, y0, z0, 0,
+        x1, y1, z1, 0,
+        x2, y2, z2, 0,
+        -(x0*eye[0] + x1*eye[1] + x2*eye[2]),
+        -(y0*eye[0] + y1*eye[1] + y2*eye[2]),
+        -(z0*eye[0] + z1*eye[1] + z2*eye[2]),
+        1
+      ]);
+
+      const m = new Float32Array([
+        1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+      ]);
+
+      gl.viewport(0, 0, 1440, 1152);
+      gl.clearColor(0.976, 0.984, 0.984, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uP'), false, p);
+      gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uV'), false, v);
+      gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uM'), false, m);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      window.rendered = true;
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Issue Scout — Cinematic 3D Website Fly-Over</title>
+  <link rel="stylesheet" href="fonts/fonts_embedded.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1440px;
+      height: 1152px;
+      overflow: hidden;
+      background: #e8ecf5;
+      font-family: 'Geist', system-ui, sans-serif;
+    }
+    #viewport-container {
+      position: relative;
+      width: 1440px;
+      height: 1152px;
+    }
+    canvas#glCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1440px;
+      height: 1152px;
+      display: block;
+    }
+    canvas#overlayCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1440px;
+      height: 1152px;
+      pointer-events: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewport-container">
+    <canvas id="glCanvas" width="1440" height="1152"></canvas>
+    <canvas id="overlayCanvas" width="2880" height="2304"></canvas>
+  </div>
+
+  <script src="webgl_app.js"></script>
+</body>
+</html>
