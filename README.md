@@ -9,24 +9,6 @@ Issue Scout is an open-source discovery tool that searches public GitHub issues 
 
 > Skill levels are best-effort suggestions based on issue labels, not guarantees. Always read the original issue and the repository's contribution guidelines before starting work.
 
-## Visual preview
-
-Explore the Issue Scout interface and its cinematic fly-over reference.
-
-**[▶ Watch the Issue Scout fly-over (MP4)](reference.mp4)**
-
-[![Issue Scout fly-over contact sheet](flyover/stills/contact_sheet.png)](reference.mp4)
-
-### Interface captures
-
-| Landing page | Python search |
-| --- | --- |
-| ![Issue Scout landing page](flyover/capture/initial_page.png) | ![Issue Scout Python search results](flyover/capture/python_search.png) |
-
-[View the full-page capture](flyover/capture/webpage_full.png) · [Browse the fly-over stills](flyover/stills/)
-
-*Images and video represent captured page states. Live GitHub search results may change over time.*
-
 
 ## Use the app
 
@@ -106,6 +88,7 @@ No environment variables are required for the current version. The app queries G
 | `npm run lint` | Check the code with ESLint. |
 | `npm run build` | Build the app for production. |
 | `npm run start` | Start the production build after running `npm run build`. |
+| `npm run test` | Run the Vitest test suite. |
 
 Run checks before opening a pull request:
 
