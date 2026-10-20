@@ -227,11 +227,11 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#080b16] text-slate-100">
       <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between border-b border-white/10 pb-5">
+        <header className="flex items-center justify-between border-b border-white/10 py-4">
           <Link
             href="/"
             aria-label="Issue Scout home"
-            className="text-xl font-black tracking-tight sm:text-2xl"
+            className="text-lg font-bold tracking-tight sm:text-xl"
           >
             ISSUE<span className="text-cyan-300">SCOUT</span>
             <span className="ml-2 hidden text-xs font-medium tracking-normal text-slate-500 sm:inline">
@@ -243,7 +243,7 @@ export default function Home() {
             href="https://github.com/sharmao07/issue-scout"
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-white/15 px-4 py-2.5 text-sm font-semibold transition hover:border-cyan-300/50 hover:bg-white/5"
+            className="rounded-md border border-white/15 px-3 py-2 font-mono text-xs uppercase tracking-wide transition hover:border-cyan-300/50 hover:bg-white/5"
           >
             GitHub <span aria-hidden="true">↗</span>
           </a>
@@ -251,12 +251,11 @@ export default function Home() {
 
         <section className="pb-16 pt-12 sm:pt-16">
           <div className="mb-9 max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/5 px-3 py-1.5 text-xs font-semibold text-cyan-200">
-              <span className="h-2 w-2 rounded-full bg-cyan-300" />
-              FIND YOUR NEXT CONTRIBUTION
-            </div>
+            <p className="mb-5 font-mono text-xs uppercase tracking-[0.14em] text-cyan-200">
+              [ Open-source issue discovery ]
+            </p>
 
-            <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="text-4xl font-semibold leading-[1.05] tracking-[-0.055em] sm:text-6xl lg:text-7xl">
               Find issues.
               <br />
               Build something{" "}
@@ -268,6 +267,38 @@ export default function Home() {
               interests, preferred technologies and experience.
               Find an issue and start contributing.
             </p>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 border-y border-white/10 sm:grid-cols-3">
+            <div className="flex gap-3 border-b border-white/10 py-4 sm:border-b-0 sm:border-r sm:pr-4">
+              <span className="font-mono text-xs text-cyan-300">01</span>
+              <div>
+                <p className="text-sm font-semibold">Search</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Find public GitHub issues.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 border-b border-white/10 py-4 sm:border-b-0 sm:border-r sm:px-4">
+              <span className="font-mono text-xs text-cyan-300">02</span>
+              <div>
+                <p className="text-sm font-semibold">Refine</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Filter by skills and interests.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 py-4 sm:pl-4">
+              <span className="font-mono text-xs text-cyan-300">03</span>
+              <div>
+                <p className="text-sm font-semibold">Contribute</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Open an issue on GitHub.
+                </p>
+              </div>
+            </div>
           </div>
 
           <form
@@ -368,7 +399,7 @@ export default function Home() {
                   Python
                 </button>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-3 font-mono text-xs leading-5 text-slate-500">
                 Pick a starting point, adjust the filters, then select Find issues.
               </p>
             </div>
@@ -376,6 +407,9 @@ export default function Home() {
             <div className="p-5 sm:p-7">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
+                  <p className="mb-2 font-mono text-xs uppercase tracking-[0.14em] text-slate-500">
+                    [ Search parameters ]
+                  </p>
                   <h2 className="font-bold text-slate-100">
                     Refine your search
                   </h2>
@@ -517,6 +551,10 @@ export default function Home() {
           <section className="mt-10" aria-live="polite">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
+                <p className="mb-2 font-mono text-xs uppercase tracking-[0.14em] text-slate-500">
+                  [ Discovery results ]
+                </p>
+
                 <h2 className="text-xl font-bold sm:text-2xl">
                   Explore issues
                 </h2>
@@ -567,7 +605,7 @@ export default function Home() {
                 {issues.map((issue) => (
                   <article
                     key={issue.id}
-                    className="rounded-2xl border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6"
+                    className="group relative overflow-hidden rounded-lg border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <a
