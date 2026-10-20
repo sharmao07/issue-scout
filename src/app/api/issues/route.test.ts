@@ -146,9 +146,7 @@ describe("GET /api/issues", () => {
     const data = await response.json();
 
     expect(data.issues).toHaveLength(1);
-    expect(data.issues[0].title).toBe(
-      "Created 35 minutes ago",
-    );
+    expect(data.issues[0].title).toBe("Created 35 minutes ago");
     expect(data.returned_count).toBe(1);
   });
 

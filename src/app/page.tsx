@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import IssueDetails from "@/components/IssueDetails";
 import type { LevelFilter, ScoutIssue } from "@/types/issue";
 
 type IssueAgeFilter =
@@ -19,6 +20,7 @@ type IssueAgeFilter =
   | "older";
 
 type IssueStatusFilter = "open" | "closed" | "all";
+type ResultsView = "search" | "saved";
 
 type SearchResponse = {
   total_count: number;
@@ -78,6 +80,53 @@ const SELECT_CLASS =
 const LABEL_CLASS =
   "mb-2.5 block text-sm font-semibold text-slate-300";
 
+const SAVED_ISSUES_STORAGE_KEY = "issue-scout:saved-issues:v1";
+
+function isScoutIssue(value: unknown): value is ScoutIssue {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const issue = value as Partial<ScoutIssue>;
+
+  return (
+    typeof issue.id === "number" &&
+    typeof issue.number === "number" &&
+    typeof issue.title === "string" &&
+    typeof issue.url === "string" &&
+    typeof issue.repository === "string" &&
+    typeof issue.repositoryUrl === "string" &&
+    typeof issue.author === "string" &&
+    (typeof issue.body === "string" || issue.body === null) &&
+    Array.isArray(issue.labels) &&
+    issue.labels.every(
+      (item) =>
+        typeof item?.name === "string" &&
+        typeof item?.color === "string",
+    ) &&
+    typeof issue.comments === "number" &&
+    typeof issue.createdAt === "string" &&
+    typeof issue.updatedAt === "string" &&
+    (issue.state === "open" || issue.state === "closed") &&
+    [
+      "beginner",
+      "intermediate",
+      "advanced",
+      "unspecified",
+    ].includes(issue.level ?? "")
+  );
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  return date.toLocaleDateString();
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState("");
@@ -96,29 +145,89 @@ export default function Home() {
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
 
+  const [savedIssues, setSavedIssues] = useState<ScoutIssue[]>([]);
+  const [savedIssuesReady, setSavedIssuesReady] = useState(false);
+  const [resultsView, setResultsView] = useState<ResultsView>("search");
+  const [selectedIssue, setSelectedIssue] =
+    useState<ScoutIssue | null>(null);
+
+  // Restore bookmarks after the browser has mounted the page.
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(
+        SAVED_ISSUES_STORAGE_KEY,
+      );
+
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+
+        if (Array.isArray(parsed)) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- Restore browser bookmarks after hydration.
+          setSavedIssues(parsed.filter(isScoutIssue));
+        }
+      }
+    } catch {
+      // Ignore invalid data or unavailable browser storage.
+    } finally {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Prevent writes until the initial browser-storage read completes.
+      setSavedIssuesReady(true);
+    }
+  }, []);
+
+  // Persist bookmarks after the initial read has completed.
+  useEffect(() => {
+    if (!savedIssuesReady) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        SAVED_ISSUES_STORAGE_KEY,
+        JSON.stringify(savedIssues),
+      );
+    } catch {
+      // Bookmarks remain available during this session if storage fails.
+    }
+  }, [savedIssues, savedIssuesReady]);
+
+  function toggleSavedIssue(issue: ScoutIssue) {
+    setSavedIssues((current) => {
+      const alreadySaved = current.some(
+        (saved) => saved.id === issue.id,
+      );
+
+      if (alreadySaved) {
+        return current.filter((saved) => saved.id !== issue.id);
+      }
+
+      return [issue, ...current];
+    });
+  }
+
   function applyQuickStart(preset: {
-  query: string;
-  language: string;
-  label: string;
-  level: LevelFilter;
+    query: string;
+    language: string;
+    label: string;
+    level: LevelFilter;
   }) {
-  setQuery(preset.query);
-  setLanguage(preset.language);
-  setLabel(preset.label);
-  setLevel(preset.level);
+    setQuery(preset.query);
+    setLanguage(preset.language);
+    setLabel(preset.label);
+    setLevel(preset.level);
 
-  setAge("any");
-  setStatus("open");
+    setAge("any");
+    setStatus("open");
 
-  setIssues([]);
-  setTotalCount(0);
-  setAvailableCount(0);
-  setTotalPages(1);
-  setPage(1);
+    setIssues([]);
+    setTotalCount(0);
+    setAvailableCount(0);
+    setTotalPages(1);
+    setPage(1);
 
-  setError("");
-  setSearched(false);
-}
+    setError("");
+    setSearched(false);
+    setResultsView("search");
+  }
 
   async function runSearch(requestedPage: number) {
     const safePage = Math.max(1, Math.min(20, requestedPage));
@@ -126,6 +235,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setSearched(true);
+    setResultsView("search");
     setIssues([]);
 
     try {
@@ -166,21 +276,25 @@ export default function Home() {
       }
 
       setIssues(data.issues);
+
       setTotalCount(
         typeof data.total_count === "number"
           ? data.total_count
           : data.issues.length,
       );
+
       setAvailableCount(
         typeof data.available_count === "number"
           ? data.available_count
           : data.issues.length,
       );
+
       setTotalPages(
         typeof data.total_pages === "number"
           ? Math.max(1, Math.min(20, data.total_pages))
           : 1,
       );
+
       setPage(
         typeof data.page === "number" ? data.page : safePage,
       );
@@ -222,7 +336,11 @@ export default function Home() {
 
     setError("");
     setSearched(false);
+    setResultsView("search");
   }
+
+  const displayedIssues =
+    resultsView === "saved" ? savedIssues : issues;
 
   return (
     <main className="min-h-screen bg-[#080b16] text-slate-100">
@@ -303,7 +421,7 @@ export default function Home() {
 
           <form
             onSubmit={handleSearch}
-            className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d1220] shadow-2xl shadow-black/20"
+            className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-[#0d1220] shadow-2xl shadow-black/20"
           >
             <div className="border-b border-white/10 p-5 sm:p-7">
               <label htmlFor="query" className={LABEL_CLASS}>
@@ -342,23 +460,25 @@ export default function Home() {
                 <span className="mr-1 text-xs font-medium text-slate-500">
                   Quick start:
                 </span>
+
                 <button
                   type="button"
-                  onClick={() => 
+                  onClick={() =>
                     applyQuickStart({
                       query: "",
                       language: "",
                       label: "good first issue",
                       level: "beginner",
-                  })
-                }
+                    })
+                  }
                   className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
                 >
                   Beginner-friendly
                 </button>
+
                 <button
                   type="button"
-                 onClick={() =>
+                  onClick={() =>
                     applyQuickStart({
                       query: "",
                       language: "",
@@ -370,6 +490,7 @@ export default function Home() {
                 >
                   Documentation
                 </button>
+
                 <button
                   type="button"
                   onClick={() =>
@@ -384,6 +505,7 @@ export default function Home() {
                 >
                   Bug fixes
                 </button>
+
                 <button
                   type="button"
                   onClick={() =>
@@ -399,8 +521,10 @@ export default function Home() {
                   Python
                 </button>
               </div>
+
               <p className="mt-3 font-mono text-xs leading-5 text-slate-500">
-                Pick a starting point, adjust the filters, then select Find issues.
+                Pick a starting point, adjust the filters, then select
+                Find issues.
               </p>
             </div>
 
@@ -552,25 +676,56 @@ export default function Home() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="mb-2 font-mono text-xs uppercase tracking-[0.14em] text-slate-500">
-                  [ Discovery results ]
+                  {resultsView === "saved"
+                    ? "[ Your collection ]"
+                    : "[ Discovery results ]"}
                 </p>
 
                 <h2 className="text-xl font-bold sm:text-2xl">
-                  Explore issues
+                  {resultsView === "saved"
+                    ? "Saved issues"
+                    : "Explore issues"}
                 </h2>
+
                 <p className="mt-1 text-sm text-slate-500">
-                  Opportunities from public GitHub repositories
+                  {resultsView === "saved"
+                    ? "Your bookmarks, stored in this browser."
+                    : "Opportunities from public GitHub repositories"}
                 </p>
               </div>
 
-              {searched && !loading && !error && (
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400">
-                  {issues.length} shown · Page {page} of {totalPages}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setResultsView((current) =>
+                      current === "saved" ? "search" : "saved",
+                    )
+                  }
+                  aria-pressed={resultsView === "saved"}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                >
+                  {resultsView === "saved"
+                    ? "← Search results"
+                    : "Saved issues"}
+
+                  <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 tabular-nums">
+                    {savedIssuesReady ? savedIssues.length : "…"}
+                  </span>
+                </button>
+
+                {resultsView === "search" &&
+                  searched &&
+                  !loading &&
+                  !error && (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400">
+                      {issues.length} shown · Page {page} of {totalPages}
+                    </span>
+                  )}
+              </div>
             </div>
 
-            {loading ? (
+            {resultsView === "search" && loading ? (
               <div className="rounded-2xl border border-white/10 bg-white/2 p-10 text-center">
                 <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300" />
                 <p className="mt-4 font-semibold">
@@ -580,7 +735,7 @@ export default function Home() {
                   Finding issues for your selected filters.
                 </p>
               </div>
-            ) : error ? (
+            ) : resultsView === "search" && error ? (
               <div
                 role="alert"
                 className="rounded-2xl border border-red-400/20 bg-red-400/5 p-6"
@@ -600,93 +755,112 @@ export default function Home() {
                   Dismiss
                 </button>
               </div>
-            ) : issues.length > 0 ? (
+            ) : displayedIssues.length > 0 ? (
               <div className="grid gap-4">
-                {issues.map((issue) => (
-                  <article
-                    key={issue.id}
-                    className="group relative overflow-hidden rounded-lg border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <a
-                        href={issue.repositoryUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="break-all text-sm font-semibold text-cyan-200 hover:underline"
-                      >
-                        {issue.repository}
-                      </a>
+                {displayedIssues.map((issue) => {
+                  const isSaved = savedIssues.some(
+                    (saved) => saved.id === issue.id,
+                  );
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                            issue.state === "open"
-                              ? "bg-emerald-400/10 text-emerald-300"
-                              : "bg-slate-400/10 text-slate-300"
-                          }`}
-                        >
-                          {issue.state}
-                        </span>
-
-                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-slate-400">
-                          {issue.level}
-                        </span>
-                      </div>
-                    </div>
-
-                    <a
-                      href={issue.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-4 block text-lg font-bold leading-7 transition hover:text-cyan-200 sm:text-xl"
+                  return (
+                    <article
+                      key={issue.id}
+                      className="group relative overflow-hidden rounded-lg border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6"
                     >
-                      {issue.title}
-                      <span className="ml-2 inline-block text-sm text-slate-500">
-                        #{issue.number}
-                      </span>
-                    </a>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <a
+                          href={issue.repositoryUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="break-all text-sm font-semibold text-cyan-200 hover:underline"
+                        >
+                          {issue.repository}
+                        </a>
 
-                    <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-slate-400">
-                      {(issue.body ?? "No description provided.")
-                        .slice(0, 280)}
-                      {(issue.body?.length ?? 0) > 280 ? "…" : ""}
-                    </p>
-
-                    {issue.labels.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {issue.labels.slice(0, 6).map((item) => (
+                        <div className="flex flex-wrap items-center gap-2">
                           <span
-                            key={item.name}
-                            className="rounded-md border border-white/10 bg-white/2 px-2.5 py-1 text-xs text-slate-300"
+                            className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                              issue.state === "open"
+                                ? "bg-emerald-400/10 text-emerald-300"
+                                : "bg-slate-400/10 text-slate-300"
+                            }`}
                           >
-                            {item.name}
+                            {issue.state}
                           </span>
-                        ))}
-                      </div>
-                    )}
 
-                    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/5 pt-4 text-xs text-slate-500">
-                      <span>by {issue.author}</span>
-                      <span>{issue.comments} comments</span>
-                      <span>
-                        Created{" "}
-                        {new Date(issue.createdAt).toLocaleDateString()}
-                      </span>
-                      <span>
-                        Updated{" "}
-                        {new Date(issue.updatedAt).toLocaleDateString()}
-                      </span>
-                      <a
-                        href={issue.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-cyan-300 hover:underline"
+                          <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-slate-400">
+                            {issue.level}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleSavedIssue(issue)}
+                            aria-pressed={isSaved}
+                            className="rounded-md border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                          >
+                            {isSaved ? "★ Saved" : "☆ Save"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedIssue(issue)}
+                        className="mt-4 block text-left text-lg font-bold leading-7 transition hover:text-cyan-200 sm:text-xl"
                       >
-                        View issue ↗
-                      </a>
-                    </div>
-                  </article>
-                ))}
+                        {issue.title}
+                        <span className="ml-2 inline-block text-sm text-slate-500">
+                          #{issue.number}
+                        </span>
+                      </button>
+
+                      <p className="mt-3 whitespace-pre-wrap wrap-break-words text-sm leading-6 text-slate-400">
+                        {(issue.body ?? "No description provided.").slice(
+                          0,
+                          280,
+                        )}
+                        {(issue.body?.length ?? 0) > 280 ? "…" : ""}
+                      </p>
+
+                      {issue.labels.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {issue.labels.slice(0, 6).map((item) => (
+                            <span
+                              key={item.name}
+                              className="rounded-md border border-white/10 bg-white/2 px-2.5 py-1 text-xs text-slate-300"
+                            >
+                              {item.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/5 pt-4 text-xs text-slate-500">
+                        <span>by {issue.author}</span>
+                        <span>{issue.comments} comments</span>
+                        <span>Created {formatDate(issue.createdAt)}</span>
+                        <span>Updated {formatDate(issue.updatedAt)}</span>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIssue(issue)}
+                          className="font-semibold text-cyan-300 hover:underline"
+                        >
+                          Preview issue
+                        </button>
+
+                        <a
+                          href={issue.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-cyan-300 hover:underline"
+                        >
+                          View on GitHub ↗
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-white/10 bg-white/2 px-6 py-12 text-center sm:py-16">
@@ -694,65 +868,82 @@ export default function Home() {
                   className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl text-cyan-200"
                   aria-hidden="true"
                 >
-                  ⌕
+                  {resultsView === "saved" ? "☆" : "⌕"}
                 </div>
 
                 <h3 className="mt-4 text-lg font-bold">
-                  {searched
-                    ? "No matching issues found"
-                    : "Your next project awaits"}
+                  {resultsView === "saved"
+                    ? "No saved issues yet"
+                    : searched
+                      ? "No matching issues found"
+                      : "Your next project awaits"}
                 </h3>
 
                 <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                  {searched
-                    ? "Try changing your keywords or removing one or more filters."
-                    : "Enter a topic, select your filters, and search public GitHub issues."}
+                  {resultsView === "saved"
+                    ? "Use the Save button on any issue to keep it here for later. Your saved issues stay in this browser."
+                    : searched
+                      ? "Try changing your keywords or removing one or more filters."
+                      : "Enter a topic, select your filters, and search public GitHub issues."}
                 </p>
-              </div>
-            )}
 
-            {searched && !loading && !error && (
-              <div className="mt-6 space-y-3">
-                {totalPages > 1 && (
-                  <nav
-                    aria-label="Issue result pages"
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-4"
+                {resultsView === "saved" && (
+                  <button
+                    type="button"
+                    onClick={() => setResultsView("search")}
+                    className="mt-5 rounded-lg border border-white/15 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:text-cyan-200"
                   >
-                    <button
-                      type="button"
-                      disabled={page <= 1}
-                      onClick={() => void runSearch(page - 1)}
-                      className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      ← Previous
-                    </button>
-
-                    <span className="text-sm text-slate-400">
-                      Page {page} of {totalPages}
-                      <span className="hidden sm:inline">
-                        {" "}· Up to 50 per page
-                      </span>
-                    </span>
-
-                    <button
-                      type="button"
-                      disabled={page >= totalPages}
-                      onClick={() => void runSearch(page + 1)}
-                      className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      Next →
-                    </button>
-                  </nav>
+                    Explore issues
+                  </button>
                 )}
-
-                <p className="text-xs leading-5 text-slate-500">
-                  GitHub reports {totalCount.toLocaleString()} matching
-                  results. Issue Scout can access up to{" "}
-                  {availableCount.toLocaleString()} results for this
-                  search, with a maximum of 1,000 per query.
-                </p>
               </div>
             )}
+
+            {resultsView === "search" &&
+              searched &&
+              !loading &&
+              !error && (
+                <div className="mt-6 space-y-3">
+                  {totalPages > 1 && (
+                    <nav
+                      aria-label="Issue result pages"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-4"
+                    >
+                      <button
+                        type="button"
+                        disabled={page <= 1}
+                        onClick={() => void runSearch(page - 1)}
+                        className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        ← Previous
+                      </button>
+
+                      <span className="text-sm text-slate-400">
+                        Page {page} of {totalPages}
+                        <span className="hidden sm:inline">
+                          {" "}· Up to 50 per page
+                        </span>
+                      </span>
+
+                      <button
+                        type="button"
+                        disabled={page >= totalPages}
+                        onClick={() => void runSearch(page + 1)}
+                        className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Next →
+                      </button>
+                    </nav>
+                  )}
+
+                  <p className="text-xs leading-5 text-slate-500">
+                    GitHub reports {totalCount.toLocaleString()} matching
+                    results. Issue Scout can access up to{" "}
+                    {availableCount.toLocaleString()} results for this
+                    search, with a maximum of 1,000 per query.
+                  </p>
+                </div>
+              )}
 
             <p className="mt-5 text-xs leading-5 text-slate-600">
               Always read the original issue and the repository&apos;s
@@ -761,9 +952,22 @@ export default function Home() {
           </section>
         </section>
 
+        {selectedIssue && (
+          <IssueDetails
+            key={selectedIssue.url}
+            issue={selectedIssue}
+            isSaved={savedIssues.some(
+              (saved) => saved.id === selectedIssue.id,
+            )}
+            onToggleSaved={() => toggleSavedIssue(selectedIssue)}
+            onClose={() => setSelectedIssue(null)}
+          />
+        )}
+
         <footer className="border-t border-white/10 py-6 text-sm text-slate-500">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>Issue Scout · Open source, built for contributors.</span>
+
             <a
               href="https://github.com/sharmao07/issue-scout"
               target="_blank"
