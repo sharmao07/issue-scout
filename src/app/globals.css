@@ -86,7 +86,7 @@ main > div > header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgb(8 11 22 / 88%);
+  background: #080b16;
   border-color: var(--scout-border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
