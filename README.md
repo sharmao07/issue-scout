@@ -8,6 +8,8 @@ Issue Scout is an open source discovery application that looks through public Gi
 
 [![Try Issue Scout](https://img.shields.io/badge/Try%20Issue%20Scout-Open%20the%20app-blue?style=for-the-badge)](https://issue-scout-chi.vercel.app/)
 
+> Skill levels are best effort suggestions based on issue labels, not guarantees. Always read the original issue and the repository's contribution guidelines before starting work.
+
 ## Quick Start
 
 Open the [live app](https://issue-scout-chi.vercel.app/), search for a topic or programming language, and filter the results to find an issue you might want to work on. You can preview an issue before opening it on GitHub.
