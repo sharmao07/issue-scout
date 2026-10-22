@@ -4,7 +4,7 @@ Find relevant GitHub issues according to your likes and skills.
 
 Issue Scout is an open source discovery application that looks through public GitHub issues for you and sorts out relevant ones according to their keywords, language, labels, skill level required, dates, and issue status.
 
-![Issue Scout interface](./flyover/capture/initial_page.png)
+![Issue Scout interface](initial_page.png)
 
 [![Try Issue Scout](https://img.shields.io/badge/Try%20Issue%20Scout-Open%20the%20app-blue?style=for-the-badge)](https://issue-scout-chi.vercel.app/)
 
