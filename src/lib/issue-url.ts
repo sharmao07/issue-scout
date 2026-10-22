@@ -1,3 +1,4 @@
+import { isValidSegment } from "@/lib/github";
 
 export type IssuePreviewTarget = {
   owner: string;
@@ -5,57 +6,23 @@ export type IssuePreviewTarget = {
   issueNumber: number;
 };
 
-function isValidSegment(value: string): boolean {
-  return (
-    /^[A-Za-z0-9_.-]{1,100}$/.test(value) &&
-    value !== "." &&
-    value !== ".."
-  );
-}
-
-export function parseIssuePreviewUrl(
-  search: string,
-): IssuePreviewTarget | null {
-  const params = new URLSearchParams(
-    search.startsWith("?") ? search.slice(1) : search,
-  );
-
+export function parseIssuePreviewUrl(search: string): IssuePreviewTarget | null {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
   const value = params.get("issue");
+  if (!value) return null;
 
-  if (!value) {
-    return null;
-  }
-
-  const match = value.match(
-    /^([^/]+)\/([^/]+)\/([1-9]\d*)$/,
-  );
-
-  if (!match) {
-    return null;
-  }
+  const match = value.match(/^([^/]+)\/([^/]+)\/([1-9]\d*)$/);
+  if (!match) return null;
 
   const [, owner, repo, issueNumberText] = match;
-
-  if (
-    !owner ||
-    !repo ||
-    !isValidSegment(owner) ||
-    !isValidSegment(repo)
-  ) {
+  if (!owner || !repo || !isValidSegment(owner) || !isValidSegment(repo)) {
     return null;
   }
 
   const issueNumber = Number(issueNumberText);
+  if (!Number.isSafeInteger(issueNumber)) return null;
 
-  if (!Number.isSafeInteger(issueNumber)) {
-    return null;
-  }
-
-  return {
-    owner,
-    repo,
-    issueNumber,
-  };
+  return { owner, repo, issueNumber };
 }
 
 export function buildIssuePreviewUrl(
@@ -78,15 +45,10 @@ export function buildIssuePreviewUrl(
   }
 
   const url = new URL(baseUrl);
-
   url.pathname = "/";
   url.search = "";
   url.hash = "";
-
-  url.searchParams.set(
-    "issue",
-    `${owner}/${repo}/${issueNumber}`,
-  );
+  url.searchParams.set("issue", `${owner}/${repo}/${issueNumber}`);
 
   return url.toString();
 }

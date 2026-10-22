@@ -1,3 +1,5 @@
+import { GITHUB_HEADERS, isValidSegment, parsePositiveInt } from "@/lib/github";
+import type { AvailabilityComment } from "@/types/contribution";
 
 type GitHubIssue = {
   number: number;
@@ -6,200 +8,106 @@ type GitHubIssue = {
   state: "open" | "closed";
   locked: boolean;
   active_lock_reason?: string | null;
-  assignees?: Array<{
-    login: string;
-    html_url: string;
-  }> | null;
+  assignees?: Array<{ login: string; html_url: string }> | null;
   state_reason?: string | null;
   closed_at: string | null;
   created_at: string;
   updated_at: string;
   comments: number;
-  labels: Array<{
-    name: string;
-    color: string;
-  }>;
+  labels: Array<{ name: string; color: string }>;
   pull_request?: unknown;
 };
 
-type GitHubIssueComment = {
+type GitHubComment = {
   id: number;
   html_url: string;
-  user: {
-    login: string;
-  } | null;
+  user: { login: string } | null;
   body: string | null;
   created_at: string;
 };
 
-type AvailabilityComment = {
-  id: number;
-  url: string;
-  author: string;
-  body: string | null;
-  createdAt: string;
-};
-
-function jsonResponse(
-  data: unknown,
-  status = 200,
-): Response {
+function noStoreJson(data: unknown, status = 200) {
   return Response.json(data, {
     status,
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-    },
+    headers: { "Cache-Control": "no-store, max-age=0" },
   });
 }
 
-function isValidSegment(value: string): boolean {
-  return (
-    /^[A-Za-z0-9_.-]{1,100}$/.test(value) &&
-    value !== "." &&
-    value !== ".."
-  );
-}
-
 export async function GET(request: Request) {
-  const params = new URL(request.url).searchParams;
-
-  const owner = params.get("owner") ?? "";
-  const repo = params.get("repo") ?? "";
-  const issueNumberText = params.get("issue_number") ?? "";
+  const { searchParams } = new URL(request.url);
+  const owner = searchParams.get("owner") ?? "";
+  const repo = searchParams.get("repo") ?? "";
+  const issueNumber = parsePositiveInt(searchParams.get("issue_number"));
 
   if (!isValidSegment(owner) || !isValidSegment(repo)) {
-    return jsonResponse(
-      {
-        error: "A valid repository owner and name are required.",
-      },
-      400,
-    );
+    return noStoreJson({ error: "A valid repository owner and name are required." }, 400);
   }
 
-  if (
-    !/^[1-9]\d*$/.test(issueNumberText) ||
-    !Number.isSafeInteger(Number(issueNumberText))
-  ) {
-    return jsonResponse(
-      {
-        error: "A valid positive issue number is required.",
-      },
-      400,
-    );
+  if (issueNumber === null) {
+    return noStoreJson({ error: "A valid positive issue number is required." }, 400);
   }
 
-  const issueNumber = Number(issueNumberText);
-  const repositoryPath =
-    `https://api.github.com/repos/` +
-    `${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
-
-  const headers = {
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
+  const repoBase = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 
   try {
-    // Always request the current issue state.
-    const issueResponse = await fetch(
-      `${repositoryPath}/issues/${issueNumber}`,
-      {
-        headers,
-        cache: "no-store",
-      },
-    );
+    const issueRes = await fetch(`${repoBase}/issues/${issueNumber}`, {
+      headers: GITHUB_HEADERS,
+      cache: "no-store",
+    });
 
-    if (issueResponse.status === 404) {
-      return jsonResponse(
-        {
-          error:
-            "This issue or its public repository could not be found.",
-        },
-        404,
-      );
+    if (issueRes.status === 404) {
+      return noStoreJson({ error: "This issue or its public repository could not be found." }, 404);
     }
 
-    if (
-      issueResponse.status === 403 ||
-      issueResponse.status === 429
-    ) {
-      return jsonResponse(
-        {
-          error:
-            "GitHub refused or rate-limited this request. Try again later.",
-        },
-        429,
-      );
+    if (issueRes.status === 403 || issueRes.status === 429) {
+      return noStoreJson({ error: "GitHub refused or rate-limited this request. Try again later." }, 429);
     }
 
-    if (issueResponse.status === 422) {
-      return jsonResponse(
-        {
-          error: "GitHub rejected the issue request.",
-        },
-        400,
-      );
+    if (issueRes.status === 422) {
+      return noStoreJson({ error: "GitHub rejected the issue request." }, 400);
     }
 
-    if (!issueResponse.ok) {
-      return jsonResponse(
-        {
-          error: "Unable to refresh the issue from GitHub.",
-        },
-        502,
-      );
+    if (!issueRes.ok) {
+      return noStoreJson({ error: "Unable to refresh the issue from GitHub." }, 502);
     }
 
-    const data = (await issueResponse.json()) as GitHubIssue;
+    const data = (await issueRes.json()) as GitHubIssue;
 
-    // The GitHub Issues API can also return pull requests.
     if (data.pull_request) {
-      return jsonResponse(
-        {
-          error:
-            "This endpoint supports issues, not pull requests.",
-        },
-        422,
-      );
+      return noStoreJson({ error: "This endpoint supports issues, not pull requests." }, 422);
     }
 
-    // Recent comments supplement the current issue snapshot.
-    // If comments cannot be loaded, preserve the status information.
-    const commentsUrl = new URL(
-      `${repositoryPath}/issues/${issueNumber}/comments`,
-    );
-
-    commentsUrl.searchParams.set("per_page", "3");
-    commentsUrl.searchParams.set("sort", "created");
-    commentsUrl.searchParams.set("direction", "desc");
-
+    // Attempt to fetch latest 3 comments (graceful fallback if comments fail)
     let recentComments: AvailabilityComment[] = [];
     let recentCommentsAvailable = false;
 
     try {
-      const commentsResponse = await fetch(commentsUrl, {
-        headers,
+      const commentsUrl = new URL(`${repoBase}/issues/${issueNumber}/comments`);
+      commentsUrl.searchParams.set("per_page", "3");
+      commentsUrl.searchParams.set("sort", "created");
+      commentsUrl.searchParams.set("direction", "desc");
+
+      const commentsRes = await fetch(commentsUrl, {
+        headers: GITHUB_HEADERS,
         cache: "no-store",
       });
 
-      if (commentsResponse.ok) {
-        const comments =
-          (await commentsResponse.json()) as GitHubIssueComment[];
-
-        recentComments = comments.slice(0, 3).map((comment) => ({
-          id: comment.id,
-          url: comment.html_url,
-          author: comment.user?.login ?? "unknown",
-          body: comment.body,
-          createdAt: comment.created_at,
+      if (commentsRes.ok) {
+        const comments = (await commentsRes.json()) as GitHubComment[];
+        recentComments = comments.slice(0, 3).map((c) => ({
+          id: c.id,
+          url: c.html_url,
+          author: c.user?.login ?? "unknown",
+          body: c.body,
+          createdAt: c.created_at,
         }));
-
         recentCommentsAvailable = true;
       }
     } catch {
-      // Recent discussion is optional; issue status is still useful.
+      // Comments are optional; primary issue data remains valid
     }
 
-    return jsonResponse({
+    return noStoreJson({
       issue: {
         number: data.number,
         title: data.title,
@@ -207,29 +115,23 @@ export async function GET(request: Request) {
         state: data.state,
         locked: data.locked,
         activeLockReason: data.active_lock_reason ?? null,
-        assignees: (data.assignees ?? []).map((assignee) => ({
-          login: assignee.login,
-          url: assignee.html_url,
+        assignees: (data.assignees ?? []).map((a) => ({
+          login: a.login,
+          url: a.html_url,
         })),
         stateReason: data.state_reason ?? null,
         closedAt: data.closed_at,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         commentCount: data.comments,
-        labels: data.labels.map((label) => ({
-          name: label.name,
-          color: label.color,
-        })),
+        labels: data.labels.map((l) => ({ name: l.name, color: l.color })),
       },
       recentComments,
       recentCommentsAvailable,
     });
   } catch {
-    return jsonResponse(
-      {
-        error:
-          "Unable to reach GitHub. Check your connection and try again.",
-      },
+    return noStoreJson(
+      { error: "Unable to reach GitHub. Check your connection and try again." },
       502,
     );
   }

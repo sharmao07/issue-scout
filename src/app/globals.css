@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 
 :root {
@@ -69,7 +68,8 @@ body {
 a,
 button,
 input,
-select {
+select,
+textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -106,7 +106,7 @@ h1 {
   letter-spacing: -0.055em;
 }
 
-/* Search panel */
+/* Search panel styling */
 
 form {
   overflow: hidden;

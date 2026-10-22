@@ -39,27 +39,15 @@ function normalizeLabel(label: string): string {
 export function inferSkillLevel(labels: string[]): SkillLevel {
   const normalized = new Set(labels.map(normalizeLabel));
 
-  if (
-    SKILL_LEVEL_LABELS.beginner.some((label) =>
-      normalized.has(normalizeLabel(label)),
-    )
-  ) {
+  if (SKILL_LEVEL_LABELS.beginner.some((l) => normalized.has(normalizeLabel(l)))) {
     return "beginner";
   }
 
-  if (
-    SKILL_LEVEL_LABELS.intermediate.some((label) =>
-      normalized.has(normalizeLabel(label)),
-    )
-  ) {
+  if (SKILL_LEVEL_LABELS.intermediate.some((l) => normalized.has(normalizeLabel(l)))) {
     return "intermediate";
   }
 
-  if (
-    SKILL_LEVEL_LABELS.advanced.some((label) =>
-      normalized.has(normalizeLabel(label)),
-    )
-  ) {
+  if (SKILL_LEVEL_LABELS.advanced.some((l) => normalized.has(normalizeLabel(l)))) {
     return "advanced";
   }
 
