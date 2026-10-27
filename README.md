@@ -18,13 +18,13 @@ A simple, focused tool to find open-source contribution opportunities.</p>
   <a href="#how-it-works">How It Works</a>
 </p>
 
-## Why Issue Scout
+## Reasons for Issue Scout
 
-- **Focused on discovery.** Quickly filter through public GitHub issues by keyword, programming language, label, time, and status.
-- **Skill level guidance.** Automated estimates (beginner, intermediate, advanced) derived from issue labels to help you pick tasks fitting your experience.
-- **Repository readiness.** Check repository activity, health signals, and contribution guides before starting to code.
-- **Private and local.** Bookmarks, contribution checklists, personal notes, and PR tracking are stored right in your browser's local storage. No account, no database, no tracking.
-- **Free and open source** under the MIT license.
+- **Built for discovery.** Easily narrow down public GitHub issues using keywords, programming languages, tags, time frame, and issue status.
+- **Determines skill levels.** Automatically determined beginner, intermediate, or advanced estimates based on the labels of the issues to find the right tasks for you.
+- **Repository ready.** Determine the repository activity, health and contribution guidelines before coding.
+- **Private & local storage.** Bookmarks, contribution guidelines, personal notes, and pull request tracker are all stored locally in your browser. No need for account, no database, no tracking.
+- **Open source project** available under the MIT license.
 
 ## Quick start
 
@@ -42,36 +42,36 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. No environm
 ## Features
 
 **Search and discovery**
-- Keyword search across public GitHub issues.
-- Filter by language (`JavaScript`, `TypeScript`, `Python`, `Rust`, `Go`, `C++`, etc.).
-- Filter by label (`good first issue`, `help wanted`, `bug`, `documentation`).
-- Filter by creation time (last 12 hours up to older) and status (`open`, `closed`, or `all`).
-- Shareable search URLs that preserve your active query and filters.
+- Search using keywords in the public GitHub issues.
+- Filtering by programming language (`JavaScript`, `TypeScript`, `Python`, `Rust`, `Go`, `C++`, and so on).
+- Filtering by labels (`good first issue`, `help wanted`, `bug`, `documentation`).
+- Filtering by creation date (last 12 hours through older ones) and status (`open`, `closed`, or `all`).
+- Shareable search URLs that contain your current query and filter settings.
 
-**Issue inspection & readiness**
-- Issue details with full descriptions and direct links to GitHub.
-- Difficulty guidance (beginner, intermediate, advanced) based on issue labels.
-- Automated readiness score (0–100) checking repository activity and contribution documentation.
-- Live GitHub status checking to verify issue state and assignees before beginning work.
+**Issue inspection & preparation**
+- Detailed issues with complete description and direct link to Github.
+- Difficulty levels (beginner, intermediate, advanced) according to Github tags.
+- Readiness score automated (0-100), assessing repository activity and contribution documents.
+- Real time Github status check for verifying status and assignee of issues before starting work.
 
-**Contribution workflow**
-- Save bookmarks to a local "Saved Issues" list.
-- Built-in 8-step contribution checklist.
-- Local notes and status tracking (Investigating, Working, PR Opened, Completed).
-- Saved pull request link for each issue.
+**Contribution process**
+- Bookmark any issue to a local "Saved Issues" list.
+- 8 steps contribution checklist included.
+- Notes and status updates for issues (Investigating, Working, PR Opened, Completed).
+- Saved link for pull request made for each issue.
 
 ## How it works
 
-Issue Scout uses Next.js route handlers to query GitHub's public REST API, classify results, and serve them to a lightweight, responsive React front end.
+Issue Scout uses Next.js routes to call the REST API of GitHub, categorize them, and then provide them to a lightweight and responsive React interface.
 
-| Component | Technology | Role |
+| Component | Technology | Function |
 |---|---|---|
-| **Framework** | Next.js 16 (App Router) | Server-side API proxy, caching, and page rendering |
-| **UI & Styling** | React 19 + Tailwind CSS | Fast, accessible, and lightweight interface |
-| **Testing** | Vitest | Fast unit test suite |
-| **Persistence** | Browser `localStorage` | Keeps bookmarks, checklist progress, and notes private on your machine |
+| **Framework** | Next.js 16 (App Router) | Server side proxy for the API, caching, and rendering of pages |
+| **UI and Design** | React 19 + Tailwind CSS | Fast and accessible user interface |
+| **Testing** | Vitest | Fast tests of codebase |
+| **Persistence** | Browser `localStorage` | Maintains bookmarks, checklist items, and notes locally on your machine |
 
-> **Note on estimates:** Skill levels and readiness scores are automated suggestions derived from issue labels and repository signals. Always check the original issue and repository guidelines before starting work.
+> **Note on estimates:** Estimated skill levels and readiness scores are suggestions generated automatically based on issue labels and other repository information. Please refer to the original repository and issue before you get started.
 
 ## Commands
 
@@ -84,10 +84,16 @@ Issue Scout uses Next.js route handlers to query GitHub's public REST API, class
 
 ## Contributing
 
-Bug reports, suggestions, and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+The UI for Issue Scout is still under development, and I'm currently working on improving it. If you can help with making the interface easy to understand and use, that would be great.
+
+If you have any contributions, especially regarding the UI, accessibility improvements, better mobile layouts, and usability suggestions, feel free to create an issue or make a pull request.
+
+However, ensure that the interface remains simple and search filters and other functionalities remain unaffected.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
 
 ## License
 
-Issue Scout is open source under the [MIT License](LICENSE.md).
+Issue Scout is an open source software released under the [MIT License](LICENSE.md).
 
-<p align="center">Made for the open source community · <a href="https://issue-scout-chi.vercel.app/">Try Issue Scout</a></p>
+<p align="center">Built for the open source community · <a href="https://issue-scout-chi.vercel.app/">Use Issue Scout</a></p>
