@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# Local files not needed in the public repository
+/flyover/
+/reference.mp4
+
 # next.js
 /.next/
 /out/
