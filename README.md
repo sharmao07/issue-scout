@@ -1,39 +1,27 @@
 # Issue Scout
 
-Find relevant GitHub issues according to your likes and skills.
+Issue Scout is a web application that helps you discover public GitHub issues suited to your interests and experience level.
 
-Issue Scout is an open source discovery application that looks through public GitHub issues for you and sorts out relevant ones according to their keywords, language, labels, skill level required, dates, and issue status.
+## Try it
 
-![Issue Scout interface](initial_page.png)
+You can try the live application here:
 
-[![Try Issue Scout](https://img.shields.io/badge/Try%20Issue%20Scout-Open%20the%20app-blue?style=for-the-badge)](https://issue-scout-chi.vercel.app/)
-
-> Skill levels are best effort suggestions based on issue labels, not guarantees. Always read the original issue and the repository's contribution guidelines before starting work.
-
-## Quick Start
-
-Open the [live app](https://issue-scout-chi.vercel.app/), search for a topic or programming language, and filter the results to find an issue you might want to work on. You can preview an issue before opening it on GitHub.
+https://issue-scout-chi.vercel.app/
 
 ## Features
 
-- **Issue search:** Find public GitHub issues using keywords, programming language, labels, and issue status.
-- **Difficulty filters:** Browse issues by suggested beginner, intermediate, or advanced level, based on their labels.
-- **Issue previews:** View issue details, repository information, and contribution guidance without immediately leaving the app.
-- **Repository and issue checks:** See repository health information, a readiness score, and issue availability signals before getting started.
-- **Saved issues:** Bookmark issues and return to them later. Saved issues remain in your browser.
-- **Contribution tracking:** Keep a checklist, record your progress and notes, and save a pull request URL for each issue.
-- **Shareable links:** Share searches with their filters or link directly to a specific issue preview.
+- **Search public GitHub issues:** Find issues using keyword search queries.
+- **Filter results:** Filter by programming language, labels, estimated skill level, creation time, and issue status (open, closed, or any).
+- **Pagination:** Navigate through results page by page.
+- **Issue details:** View full issue descriptions and links to original GitHub issues.
+- **Readiness and repository checks:** View repository metadata (stars, forks, open issues) and automated contribution readiness signals where available.
+- **Save issues:** Bookmark issues to review later. Saved issues remain stored in your browser.
+- **Contribution progress:** Track contribution steps with a checklist, record your status and personal notes, and save pull request links.
+- **Shareable search links:** Copy and share search URLs that preserve your query and selected filters.
 
-## Run Locally
+## Quick start
 
-### Requirements
-
-- Node.js 20.9 or newer
-- npm
-
-### Installation
-
-Clone the repository, install its dependencies, and start the development server:
+To run Issue Scout locally:
 
 ```bash
 git clone https://github.com/sharmao07/issue-scout.git
@@ -44,32 +32,42 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-No environment variables are required for the current version.
+No environment variables or API keys are required for basic usage.
 
-### Useful Commands
+## Requirements and commands
+
+### Requirements
+
+- Node.js 20 or newer
+- npm
+
+### Useful commands
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Starts the development server |
-| `npm run test` | Runs the tests |
-| `npm run lint` | Lints code with ESLint |
-| `npm run build` | Builds project for production |
+| `npm run dev` | Starts the local development server |
+| `npm run test` | Runs the test suite with Vitest |
+| `npm run lint` | Lints the codebase with ESLint |
+| `npm run build` | Builds the project for production |
 
-## How It Works
+## How it works
 
-Issue Scout uses Next.js and React as the front-end technology with TypeScript and Tailwind CSS as an application language and styling framework respectively. Next.js route handlers pull the public GitHub issues and repository data and serve it to the front end.
+Issue Scout is built using Next.js, React, TypeScript, and Tailwind CSS.
 
-Filters are meant to help you find suitable issues to look through. The difficulty level suggestions depend on the labels on the issue whereas the contribution readiness score relies on the available issue and repository signals. It is only an estimate, however, so do not forget to check the issue itself and repository contribution guidelines.
+- **GitHub data fetching:** Next.js route handlers fetch public issue and repository information from the GitHub REST API.
+- **Skill level estimates:** Difficulty estimates (beginner, intermediate, advanced) are suggestions based on issue labels and text. They are guidance only, not guarantees.
+- **Readiness scoring:** The readiness score checks repository documentation (such as `CONTRIBUTING.md`) and issue activity to help gauge how prepared an issue is for contributors.
+- **Browser-local storage:** Saved bookmarks and contribution progress are kept in browser `localStorage`. No external database or account is required.
 
-Issues saved and contribution progress are kept in browser local storage, allowing you to continue working on them without an Issue Scout account.
+## Credits and license
 
-## Credits
+### Credits
 
 - [GitHub REST API](https://docs.github.com/en/rest) for publicly available issue and repository information.
 - [Next.js](https://nextjs.org/) and [React](https://react.dev/) for the application framework.
-- [Tailwind CSS](https://tailwindcss.com/) for styles.
-- [Vitest](https://vitest.dev/) for testing.
+- [Tailwind CSS](https://tailwindcss.com/) for styling.
+- [Vitest](https://vitest.dev/) for automated testing.
 
-## License
+### License
 
-Issue Scout is licensed under the MIT License. See [LICENSE.md](https://github.com/sharmao07/issue-scout/blob/main/LICENSE.md) for details.
+Issue Scout is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
