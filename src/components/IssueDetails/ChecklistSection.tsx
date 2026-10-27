@@ -33,105 +33,64 @@ export default function ChecklistSection({
   onPullRequestUrlChange,
 }: Props) {
   return (
-    <section className="border-t border-white/10 pt-7">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-200">
-        [ Contribution tracker ]
-      </p>
-
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-xl font-bold">Your contribution checklist</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            Track your progress from issue discovery to pull request. Progress is saved locally in your browser.
-          </p>
-        </div>
+    <section className="border-t border-gray-300 pt-3 text-xs">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="font-bold text-gray-800">
+          Contribution Checklist ({completedSteps}/{CHECKLIST_STEPS.length} - {completionPercent}%)
+        </h4>
 
         <button
           type="button"
           onClick={onResetChecklist}
-          className="rounded-md border border-white/15 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+          className="text-blue-600 underline"
         >
-          Reset checklist
+          Reset
         </button>
       </div>
 
-      <div className="mt-5">
-        <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-slate-400">
-            {completedSteps} of {CHECKLIST_STEPS.length} completed
-          </span>
-          <span className="font-mono text-cyan-200">{completionPercent}%</span>
-        </div>
-
-        <div
-          className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"
-          role="progressbar"
-          aria-label="Contribution checklist progress"
-          aria-valuemin={0}
-          aria-valuemax={CHECKLIST_STEPS.length}
-          aria-valuenow={completedSteps}
-        >
-          <div
-            className="h-full rounded-full bg-cyan-300 transition-all"
-            style={{ width: `${completionPercent}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="mt-5 space-y-2">
+      {/* Checklist items */}
+      <div className="mt-2 space-y-1">
         {CHECKLIST_STEPS.map((step, index) => (
           <label
             key={step}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-white/10 bg-white/2 p-4 transition hover:border-cyan-300/25"
+            className="flex items-start gap-2 cursor-pointer text-gray-800"
           >
             <input
               type="checkbox"
               checked={checkedSteps[index] ?? false}
               onChange={() => onToggleStep(index)}
-              className="mt-1 size-4 shrink-0 accent-cyan-300"
+              className="mt-0.5"
             />
-            <span
-              className={`text-sm leading-6 ${
-                checkedSteps[index] ? "text-slate-500 line-through" : "text-slate-200"
-              }`}
-            >
+            <span className={checkedSteps[index] ? "line-through text-gray-400" : ""}>
               {step}
             </span>
           </label>
         ))}
       </div>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
-        <div>
-          <label
-            htmlFor="contribution-status"
-            className="mb-2 block text-sm font-semibold text-slate-200"
-          >
-            Contribution status
+      {/* Status, PR URL, and Notes Form */}
+      <div className="mt-3 space-y-2 border border-gray-300 p-2">
+        <div className="flex items-center gap-2">
+          <label htmlFor="contribution-status" className="font-medium text-gray-700">
+            Status:
           </label>
           <select
             id="contribution-status"
             value={status}
             onChange={(e) => onStatusChange(e.target.value as ContributionStatus)}
-            className="w-full rounded-lg border border-white/10 bg-[#101626] px-3 py-3 text-sm text-slate-100 outline-none focus:border-cyan-300"
+            className="border border-gray-400 bg-white px-2 py-0.5 text-xs text-gray-800"
           >
             <option value="not-started">Not started</option>
-            <option value="investigating">Investigating the issue</option>
-            <option value="working">Working on a solution</option>
-            <option value="pr-opened">Pull request opened</option>
-            <option value="completed">Contribution completed</option>
+            <option value="investigating">Investigating</option>
+            <option value="working">Working on it</option>
+            <option value="pr-opened">PR opened</option>
+            <option value="completed">Completed</option>
           </select>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            Update this as you work through the contribution.
-          </p>
         </div>
 
         <div>
-          <label
-            htmlFor="pull-request-url"
-            className="mb-2 block text-sm font-semibold text-slate-200"
-          >
-            Pull request URL
+          <label htmlFor="pull-request-url" className="block font-medium text-gray-700 mb-0.5">
+            PR URL:
           </label>
           <input
             id="pull-request-url"
@@ -139,48 +98,34 @@ export default function ChecklistSection({
             value={pullRequestUrl}
             onChange={(e) => onPullRequestUrlChange(e.target.value)}
             placeholder="https://github.com/owner/repo/pull/123"
-            className="w-full rounded-lg border border-white/10 bg-[#101626] px-3 py-3 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-300"
+            className="w-full border border-gray-400 bg-white px-2 py-1 text-xs text-gray-800"
           />
-          {validPullRequestUrl ? (
+          {validPullRequestUrl && (
             <a
               href={validPullRequestUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-block text-xs font-semibold text-cyan-200 hover:underline"
+              className="mt-0.5 inline-block text-blue-600 underline"
             >
-              Open tracked pull request ↗
+              Open PR
             </a>
-          ) : (
-            <p className="mt-2 text-xs text-slate-500">
-              Add your GitHub pull-request link when one exists.
-            </p>
           )}
         </div>
 
-        <div className="md:col-span-2">
-          <label
-            htmlFor="contribution-notes"
-            className="mb-2 block text-sm font-semibold text-slate-200"
-          >
-            Personal notes
+        <div>
+          <label htmlFor="contribution-notes" className="block font-medium text-gray-700 mb-0.5">
+            Notes:
           </label>
           <textarea
             id="contribution-notes"
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Record reproduction steps, relevant files, ideas, questions, or next actions..."
-            rows={5}
-            className="w-full resize-y rounded-lg border border-white/10 bg-[#101626] px-4 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-300"
+            placeholder="Write notes here..."
+            rows={3}
+            className="w-full border border-gray-400 bg-white px-2 py-1 text-xs text-gray-800"
           />
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            Notes, status, PR URL, and checklist are saved in this browser and not sent to GitHub.
-          </p>
         </div>
       </div>
-
-      <p className="mt-4 text-xs leading-5 text-slate-500">
-        Issue Scout tracks your checklist locally. Always verify details on GitHub before submitting work.
-      </p>
     </section>
   );
 }

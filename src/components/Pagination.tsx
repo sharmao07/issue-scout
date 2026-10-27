@@ -12,44 +12,38 @@ export default function Pagination({
   page,
   totalPages,
   totalCount,
-  availableCount,
   onPageChange,
 }: Props) {
   return (
-    <div className="mt-6 space-y-3">
+    <div className="mt-4 pt-2 border-t border-gray-300 text-xs">
       {totalPages > 1 && (
-        <nav
-          aria-label="Issue result pages"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-4"
-        >
+        <div className="flex items-center justify-between gap-2 py-1">
           <button
             type="button"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="border border-gray-400 bg-gray-100 px-3 py-1 text-gray-800 hover:bg-gray-200 disabled:opacity-40"
           >
-            ← Previous
+            Previous
           </button>
 
-          <span className="text-sm text-slate-400">
+          <span className="text-gray-700">
             Page {page} of {totalPages}
-            <span className="hidden sm:inline"> · Up to 50 per page</span>
           </span>
 
           <button
             type="button"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="border border-gray-400 bg-gray-100 px-3 py-1 text-gray-800 hover:bg-gray-200 disabled:opacity-40"
           >
-            Next →
+            Next
           </button>
-        </nav>
+        </div>
       )}
 
-      <p className="text-xs leading-5 text-slate-500">
-        GitHub reports {totalCount.toLocaleString()} matching results. Issue Scout can access up to{" "}
-        {availableCount.toLocaleString()} results for this search, with a maximum of 1,000 per query.
+      <p className="mt-1 text-gray-500">
+        Found {totalCount.toLocaleString()} issues.
       </p>
     </div>
   );

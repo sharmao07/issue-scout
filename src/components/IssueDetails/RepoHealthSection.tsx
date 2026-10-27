@@ -22,125 +22,74 @@ export default function RepoHealthSection({
   issueRepoUrl,
 }: Props) {
   return (
-    <section className="border-t border-white/10 pt-7">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-200">
-        [ Repository health ]
-      </p>
-
-      <h3 className="mt-2 text-xl font-bold">Repository signals</h3>
+    <section className="border-t border-gray-300 pt-3 text-xs">
+      <h4 className="font-bold text-gray-800">Repository Information</h4>
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-400">Loading public repository details…</p>
+        <p className="mt-1 text-gray-500">Loading repository info…</p>
       ) : data ? (
-        <>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            {data.repository.description || "No repository description is available."}
-          </p>
+        <div className="mt-2 space-y-2">
+          {data.repository.description && (
+            <p className="text-gray-700">{data.repository.description}</p>
+          )}
 
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">Stars</p>
-              <p className="mt-1 text-lg font-bold tabular-nums">
-                {data.repository.stars.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">Forks</p>
-              <p className="mt-1 text-lg font-bold tabular-nums">
-                {data.repository.forks.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">Open items</p>
-              <p className="mt-1 text-lg font-bold tabular-nums">
-                {data.repository.openItems.toLocaleString()}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                GitHub&apos;s count may include pull requests.
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">Last push</p>
-              <p className="mt-1 text-sm font-semibold">
-                {formatDate(data.repository.pushedAt)}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">License</p>
-              <p className="mt-1 text-sm font-semibold">
-                {data.repository.license || "Not detected"}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 p-4">
-              <p className="text-xs text-slate-500">Default branch</p>
-              <p className="mt-1 break-all text-sm font-semibold">
-                {data.repository.defaultBranch}
-              </p>
-            </div>
+          <div className="border border-gray-300 p-2 space-y-1 text-gray-700">
+            <p>Stars: <b>{data.repository.stars.toLocaleString()}</b> · Forks: <b>{data.repository.forks.toLocaleString()}</b> · Open issues: <b>{data.repository.openItems.toLocaleString()}</b></p>
+            <p>License: <b>{data.repository.license || "None"}</b> · Default branch: <b>{data.repository.defaultBranch}</b> · Last push: <b>{formatDate(data.repository.pushedAt)}</b></p>
           </div>
 
           {(data.repository.archived || data.repository.disabled) && (
-            <p className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/4 p-4 text-sm text-amber-100">
-              {data.repository.archived
-                ? "This repository is archived."
-                : "GitHub reports that this repository is disabled."}{" "}
-              Verify that it still accepts contributions before starting.
+            <p className="text-amber-800 font-medium">
+              Note: This repository is {data.repository.archived ? "archived" : "disabled"}.
             </p>
           )}
 
-          <div className="mt-5">
-            <h4 className="font-semibold">Contribution instructions</h4>
-
+          <div className="space-y-1">
+            <b>Contributing guides:</b>
             {data.contributionGuides.length > 0 ? (
-              <ul className="mt-3 space-y-2">
+              <ul className="list-disc list-inside">
                 {data.contributionGuides.map((guide) => (
                   <li key={guide.path}>
                     <a
                       href={guide.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="break-all text-sm font-semibold text-cyan-200 hover:underline"
+                      className="text-blue-600 underline"
                     >
-                      {guide.path} ↗
+                      {guide.path}
                     </a>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                No CONTRIBUTING.md file was found in the common locations checked. Review the repository README, code of conduct, and pinned project instructions.
-              </p>
+              <p className="text-gray-500">None found.</p>
             )}
+          </div>
 
+          <div className="flex gap-3 text-xs pt-1">
             <a
               href={`${data.repository.url}/blob/${encodeURIComponent(data.repository.defaultBranch)}/README.md`}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-block text-sm font-semibold text-cyan-200 hover:underline"
+              className="text-blue-600 underline"
             >
-              Check repository README ↗
+              README
+            </a>
+            <a
+              href={issueRepoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 underline"
+            >
+              Open repo on GitHub
             </a>
           </div>
-        </>
+        </div>
       ) : (
-        <p className="mt-4 text-sm text-slate-400">
-          {error || "Repository health information is currently unavailable."}
+        <p className="mt-1 text-gray-500">
+          {error || "Repository info unavailable."}
         </p>
       )}
-
-      <a
-        href={issueRepoUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-5 inline-block text-sm font-semibold text-cyan-200 hover:underline"
-      >
-        Open repository on GitHub ↗
-      </a>
     </section>
   );
 }

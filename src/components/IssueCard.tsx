@@ -11,7 +11,7 @@ type Props = {
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleDateString();
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
 }
 
 export default function IssueCard({
@@ -20,95 +20,92 @@ export default function IssueCard({
   onSelect,
   onToggleSaved,
 }: Props) {
+  const updatedDate = formatDate(issue.updatedAt);
+
   return (
-    <article className="group relative overflow-hidden rounded-lg border border-white/10 bg-[#0d1220] p-5 transition hover:border-cyan-300/30 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <a
-          href={issue.repositoryUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="break-all text-sm font-semibold text-cyan-200 hover:underline"
-        >
-          {issue.repository}
-        </a>
-
-        <div className="flex flex-wrap items-center gap-2">
+    <article className="border-b border-gray-200 py-2.5 text-xs text-gray-800">
+      <div className="space-y-1">
+        {/* Title row */}
+        <div className="flex flex-wrap items-baseline gap-2">
           <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+            className={
               issue.state === "open"
-                ? "bg-emerald-400/10 text-emerald-300"
-                : "bg-slate-400/10 text-slate-300"
-            }`}
+                ? "font-semibold text-green-700"
+                : "font-semibold text-gray-500"
+            }
           >
-            {issue.state}
+            [{issue.state}]
           </span>
 
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs capitalize text-slate-400">
-            {issue.level}
-          </span>
+          <a
+            href={issue.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-medium text-blue-600 underline hover:text-blue-800"
+          >
+            {issue.title}
+          </a>
+
+          <span className="text-gray-500">#{issue.number}</span>
+
+          <span className="text-gray-400">in</span>
+
+          <a
+            href={issue.repositoryUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-gray-700 underline hover:text-gray-900"
+          >
+            {issue.repository}
+          </a>
+
+          {issue.level && issue.level !== "unspecified" && (
+            <span className="text-gray-500">({issue.level})</span>
+          )}
+        </div>
+
+        {/* Labels row */}
+        {issue.labels.length > 0 && (
+          <div className="text-gray-600">
+            <span>Labels: </span>
+            <span>
+              {issue.labels
+                .slice(0, 5)
+                .map((l) => l.name)
+                .join(", ")}
+            </span>
+          </div>
+        )}
+
+        {/* Info & action links */}
+        <div className="flex flex-wrap items-center gap-3 text-gray-500">
+          {updatedDate && <span>Updated: {updatedDate}</span>}
 
           <button
             type="button"
             onClick={() => onToggleSaved(issue)}
-            aria-pressed={isSaved}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
+            className="text-blue-600 underline hover:text-blue-800"
           >
-            {isSaved ? "★ Saved" : "☆ Save"}
+            {isSaved ? "Saved" : "Save"}
           </button>
+
+          <button
+            type="button"
+            onClick={() => onSelect(issue)}
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Details
+          </button>
+
+          <a
+            href={issue.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Open on GitHub
+          </a>
         </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onSelect(issue)}
-        className="mt-4 block text-left text-lg font-bold leading-7 transition hover:text-cyan-200 sm:text-xl"
-      >
-        {issue.title}
-        <span className="ml-2 inline-block text-sm text-slate-500">
-          #{issue.number}
-        </span>
-      </button>
-
-      <p className="mt-3 whitespace-pre-wrap wrap-break-words text-sm leading-6 text-slate-400">
-        {(issue.body ?? "No description provided.").slice(0, 280)}
-        {(issue.body?.length ?? 0) > 280 ? "…" : ""}
-      </p>
-
-      {issue.labels.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {issue.labels.slice(0, 6).map((item) => (
-            <span
-              key={item.name}
-              className="rounded-md border border-white/10 bg-white/2 px-2.5 py-1 text-xs text-slate-300"
-            >
-              {item.name}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/5 pt-4 text-xs text-slate-500">
-        <span>by {issue.author}</span>
-        <span>{issue.comments} comments</span>
-        <span>Created {formatDate(issue.createdAt)}</span>
-        <span>Updated {formatDate(issue.updatedAt)}</span>
-
-        <button
-          type="button"
-          onClick={() => onSelect(issue)}
-          className="font-semibold text-cyan-300 hover:underline"
-        >
-          Preview issue
-        </button>
-
-        <a
-          href={issue.url}
-          target="_blank"
-          rel="noreferrer"
-          className="font-semibold text-cyan-300 hover:underline"
-        >
-          View on GitHub ↗
-        </a>
       </div>
     </article>
   );

@@ -127,7 +127,7 @@ export default function IssueDetails({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -137,107 +137,84 @@ export default function IssueDetails({
         role="dialog"
         aria-modal="true"
         aria-labelledby="issue-preview-title"
-        className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-white/15 bg-[#0b101c] shadow-2xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto border border-gray-400 bg-white p-4 text-xs text-gray-900"
       >
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/10 bg-[#0b101c]/95 px-5 py-4 backdrop-blur sm:px-7">
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-200">
-            [ Issue details ]
-          </p>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-white/15 px-3 py-2 text-sm text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
-          >
-            Close ✕
-          </button>
-        </div>
-
-        <div className="space-y-9 p-5 sm:p-7">
-          {/* Main Issue Overview */}
-          <section>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Header bar */}
+        <div className="flex items-start justify-between border-b border-gray-300 pb-2">
+          <div>
+            <h2 id="issue-preview-title" className="text-base font-bold">
+              {issue.title} (#{issue.number})
+            </h2>
+            <p className="text-gray-600">
+              Repository:{" "}
               <a
                 href={issue.repositoryUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="break-all text-sm font-semibold text-cyan-200 hover:underline"
+                className="text-blue-600 underline"
               >
                 {issue.repository}
               </a>
-
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                  issue.state === "open"
-                    ? "bg-emerald-400/10 text-emerald-300"
-                    : "bg-slate-400/10 text-slate-300"
-                }`}
-              >
-                {issue.state}
-              </span>
-            </div>
-
-            <h2
-              id="issue-preview-title"
-              className="mt-4 text-2xl font-bold leading-tight tracking-tight sm:text-3xl"
-            >
-              {issue.title}
-              <span className="ml-2 text-base font-medium text-slate-500">
-                #{issue.number}
-              </span>
-            </h2>
-
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-400">
-              <span className="rounded-full bg-white/5 px-3 py-1.5 capitalize">
-                {issue.level}
-              </span>
-              <span>{issue.comments} comments</span>
-              <span>by {issue.author}</span>
-              <span>Created {formatDateTime(issue.createdAt)}</span>
-              <span>Updated {formatDateTime(issue.updatedAt)}</span>
-            </div>
-
-            <h3 className="mt-6 text-sm font-semibold text-slate-200">Issue description</h3>
-            <p className="mt-3 whitespace-pre-wrap wrap-break-words text-sm leading-7 text-slate-300">
-              {issue.body?.trim() || "No description provided by the author."}
             </p>
+          </div>
 
-            {issue.labels.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {issue.labels.map((item) => (
-                  <span
-                    key={item.name}
-                    className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300"
-                  >
-                    {item.name}
-                  </span>
-                ))}
-              </div>
-            )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+            aria-label="Close dialog"
+          >
+            Close [X]
+          </button>
+        </div>
 
-            <div className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-5">
-              <button
-                type="button"
-                onClick={onToggleSaved}
-                aria-pressed={isSaved}
-                className="rounded-lg border border-white/15 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:text-cyan-200"
-              >
-                {isSaved ? "★ Remove from saved" : "☆ Save issue"}
-              </button>
+        {/* Metadata & Actions */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 py-2">
+          <div className="flex flex-wrap items-center gap-2 text-gray-600">
+            <span>Status: <b>{issue.state}</b></span>
+            <span>·</span>
+            <span>Level: <b>{issue.level}</b></span>
+            <span>·</span>
+            <span>By {issue.author}</span>
+            <span>·</span>
+            <span>{formatDateTime(issue.createdAt)}</span>
+          </div>
 
-              <a
-                href={issue.url}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-lg bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
-              >
-                Open issue on GitHub ↗
-              </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleSaved}
+              className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+            >
+              {isSaved ? "Saved" : "Save"}
+            </button>
+            <a
+              href={issue.url}
+              target="_blank"
+              rel="noreferrer"
+              className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+            >
+              Open on GitHub
+            </a>
+          </div>
+        </div>
+
+        {/* Issue Description */}
+        <div className="py-3">
+          <h3 className="font-bold text-gray-800">Description:</h3>
+          <p className="mt-1 whitespace-pre-wrap text-gray-700">
+            {issue.body?.trim() || "No description provided."}
+          </p>
+
+          {issue.labels.length > 0 && (
+            <div className="mt-2 text-gray-600">
+              <b>Labels:</b> {issue.labels.map((l) => l.name).join(", ")}
             </div>
-          </section>
+          )}
+        </div>
 
-          {/* Section 1: Availability Check */}
+        {/* Detailed Sections */}
+        <div className="space-y-4">
           <AvailabilitySection
             loading={availabilityLoading}
             error={availabilityError}
@@ -251,7 +228,6 @@ export default function IssueDetails({
             }}
           />
 
-          {/* Section 2: Readiness Score */}
           <ReadinessSection
             loading={repositoryLoading}
             error={repositoryError}
@@ -260,7 +236,6 @@ export default function IssueDetails({
             scoreLabel={readiness?.label ?? ""}
           />
 
-          {/* Section 3: Repository Signals */}
           <RepoHealthSection
             loading={repositoryLoading}
             error={repositoryError}
@@ -268,7 +243,6 @@ export default function IssueDetails({
             issueRepoUrl={issue.repositoryUrl}
           />
 
-          {/* Section 4: Contribution Companion Checklist */}
           <ChecklistSection
             checkedSteps={checklist.checkedSteps}
             completedSteps={checklist.completedSteps}
