@@ -147,27 +147,6 @@ export default function Home() {
     runSearch(1);
   };
 
-  const handleQuickStart = (preset: {
-    query: string;
-    language: string;
-    label: string;
-    level: LevelFilter;
-  }) => {
-    setQuery(preset.query);
-    setLanguage(preset.language);
-    setLabel(preset.label);
-    setLevel(preset.level);
-    setAge("any");
-    setStatus("open");
-
-    resetResults();
-    setError("");
-    setSearched(false);
-    setResultsView("search");
-    setCopyLinkMessage("");
-    setShareUrl("");
-  };
-
   const handleResetFilters = () => {
     setQuery("");
     setLanguage("");
@@ -276,28 +255,28 @@ export default function Home() {
   const displayedIssues = resultsView === "saved" ? savedIssues : issues;
 
   return (
-    <main className="min-h-screen bg-[#080b16] text-slate-100">
-      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8 lg:px-10">
+    <div className="min-h-screen bg-white text-gray-900">
+      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <SearchHeader />
 
         {directIssueError && (
           <div
             role="alert"
-            className="mt-5 rounded-lg border border-red-400/20 bg-red-400/5 p-5"
+            className="mb-3 border border-red-300 bg-red-50 p-2 text-xs text-red-800"
           >
-            <p className="font-semibold text-red-200">Could not open the shared issue</p>
-            <p className="mt-2 text-sm leading-6 text-slate-400">{directIssueError}</p>
+            <span>{directIssueError} </span>
             <button
               type="button"
               onClick={() => setDirectIssueError("")}
-              className="mt-3 text-sm font-semibold text-cyan-200 hover:underline"
+              className="text-red-900 underline"
             >
-              Dismiss
+              [Dismiss]
             </button>
           </div>
         )}
 
-        <section className="pb-16">
+        {/* Search & Filter section */}
+        <section aria-label="Search and filters">
           <SearchForm
             query={query}
             setQuery={setQuery}
@@ -313,142 +292,96 @@ export default function Home() {
             setStatus={setStatus}
             loading={loading}
             onSubmit={handleSearch}
-            onQuickStart={handleQuickStart}
             onCopyLink={handleCopyLink}
             onReset={handleResetFilters}
             copyLinkMessage={copyLinkMessage}
             shareUrl={shareUrl}
           />
-
-          <section className="mt-10" aria-live="polite">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="mb-2 font-mono text-xs uppercase tracking-[0.14em] text-slate-500">
-                  {resultsView === "saved" ? "[ Your collection ]" : "[ Discovery results ]"}
-                </p>
-
-                <h2 className="text-xl font-bold sm:text-2xl">
-                  {resultsView === "saved" ? "Saved issues" : "Explore issues"}
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {resultsView === "saved"
-                    ? "Your bookmarks, stored in this browser."
-                    : "Opportunities from public GitHub repositories"}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setResultsView((curr) => (curr === "saved" ? "search" : "saved"))
-                  }
-                  aria-pressed={resultsView === "saved"}
-                  className="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-200"
-                >
-                  {resultsView === "saved" ? "← Search results" : "Saved issues"}
-                  <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 tabular-nums">
-                    {savedIssuesReady ? savedIssues.length : "…"}
-                  </span>
-                </button>
-
-                {resultsView === "search" && searched && !loading && !error && (
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400">
-                    {issues.length} shown · Page {page} of {totalPages}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {resultsView === "search" && loading ? (
-              <div className="rounded-2xl border border-white/10 bg-white/2 p-10 text-center">
-                <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300" />
-                <p className="mt-4 font-semibold">Searching GitHub...</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Finding issues for your selected filters.
-                </p>
-              </div>
-            ) : resultsView === "search" && error ? (
-              <div
-                role="alert"
-                className="rounded-2xl border border-red-400/20 bg-red-400/5 p-6"
-              >
-                <p className="font-semibold text-red-200">We couldn&apos;t load issues</p>
-                <p className="mt-2 text-sm leading-6 text-red-200/70">{error}</p>
-                <button
-                  type="button"
-                  onClick={() => setError("")}
-                  className="mt-4 rounded-lg border border-red-200/20 px-3 py-2 text-sm text-red-100 hover:bg-red-200/5"
-                >
-                  Dismiss
-                </button>
-              </div>
-            ) : displayedIssues.length > 0 ? (
-              <div className="grid gap-4">
-                {displayedIssues.map((issue) => (
-                  <IssueCard
-                    key={issue.id}
-                    issue={issue}
-                    isSaved={isSaved(issue.id)}
-                    onSelect={setSelectedIssue}
-                    onToggleSaved={toggleSaved}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-white/2 px-6 py-12 text-center sm:py-16">
-                <div
-                  className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl text-cyan-200"
-                  aria-hidden="true"
-                >
-                  {resultsView === "saved" ? "☆" : "⌕"}
-                </div>
-
-                <h3 className="mt-4 text-lg font-bold">
-                  {resultsView === "saved"
-                    ? "No saved issues yet"
-                    : searched
-                      ? "No matching issues found"
-                      : "Your next project awaits"}
-                </h3>
-
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                  {resultsView === "saved"
-                    ? "Use the Save button on any issue to keep it here for later. Your saved issues stay in this browser."
-                    : searched
-                      ? "Try changing your keywords or removing one or more filters."
-                      : "Enter a topic, select your filters, and search public GitHub issues."}
-                </p>
-
-                {resultsView === "saved" && (
-                  <button
-                    type="button"
-                    onClick={() => setResultsView("search")}
-                    className="mt-5 rounded-lg border border-white/15 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:text-cyan-200"
-                  >
-                    Explore issues
-                  </button>
-                )}
-              </div>
-            )}
-
-            {resultsView === "search" && searched && !loading && !error && (
-              <Pagination
-                page={page}
-                totalPages={totalPages}
-                totalCount={totalCount}
-                availableCount={availableCount}
-                onPageChange={(newPage) => runSearch(newPage)}
-              />
-            )}
-
-            <p className="mt-5 text-xs leading-5 text-slate-600">
-              Always read the original issue and the repository&apos;s contribution guidelines before starting work.
-            </p>
-          </section>
         </section>
 
+        {/* Results section */}
+        <section className="mt-6" aria-live="polite">
+          {/* View toggle header */}
+          <div className="flex items-center gap-4 border-b border-gray-300 pb-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setResultsView("search")}
+              className={
+                resultsView === "search"
+                  ? "font-bold text-gray-900 underline"
+                  : "text-blue-600 underline"
+              }
+            >
+              Search results {searched && !loading && !error ? `(${issues.length})` : ""}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setResultsView("saved")}
+              className={
+                resultsView === "saved"
+                  ? "font-bold text-gray-900 underline"
+                  : "text-blue-600 underline"
+              }
+            >
+              Saved issues ({savedIssuesReady ? savedIssues.length : "…"})
+            </button>
+          </div>
+
+          {/* Results list / State display */}
+          {resultsView === "search" && loading ? (
+            <div className="py-6 text-xs text-gray-600">
+              Loading issues from GitHub…
+            </div>
+          ) : resultsView === "search" && error ? (
+            <div
+              role="alert"
+              className="my-3 border border-red-300 bg-red-50 p-2 text-xs text-red-800"
+            >
+              <p className="font-semibold">Error: {error}</p>
+              <button
+                type="button"
+                onClick={() => setError("")}
+                className="mt-1 text-red-900 underline"
+              >
+                [Dismiss]
+              </button>
+            </div>
+          ) : displayedIssues.length > 0 ? (
+            <div>
+              {displayedIssues.map((issue) => (
+                <IssueCard
+                  key={issue.id}
+                  issue={issue}
+                  isSaved={isSaved(issue.id)}
+                  onSelect={setSelectedIssue}
+                  onToggleSaved={toggleSaved}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 text-xs text-gray-500">
+              {resultsView === "saved"
+                ? "No saved issues yet. Click Save on an issue to bookmark it."
+                : searched
+                  ? "No matching issues found. Try different keywords or filters."
+                  : "Enter a keyword above to find issues."}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {resultsView === "search" && searched && !loading && !error && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              availableCount={availableCount}
+              onPageChange={(newPage) => runSearch(newPage)}
+            />
+          )}
+        </section>
+
+        {/* Issue Details Modal */}
         {selectedIssue && (
           <IssueDetails
             key={selectedIssue.url}
@@ -459,20 +392,10 @@ export default function Home() {
           />
         )}
 
-        <footer className="border-t border-white/10 py-6 text-sm text-slate-500">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span>Issue Scout · Open source, built for contributors.</span>
-            <a
-              href="https://github.com/sharmao07/issue-scout"
-              target="_blank"
-              rel="noreferrer"
-              className="transition hover:text-cyan-200"
-            >
-              View source on GitHub ↗
-            </a>
-          </div>
+        <footer className="mt-8 border-t border-gray-300 pt-3 text-xs text-gray-500">
+          Issue Scout
         </footer>
       </div>
-    </main>
+    </div>
   );
 }
