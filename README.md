@@ -1,39 +1,34 @@
-# Issue Scout
+<h1 align="center">Issue Scout</h1>
 
-Find relevant GitHub issues according to your likes and skills.
+<p align="center"><strong>Discover public GitHub issues suited to your skills and interests.</strong><br>
+A simple, focused tool to find open-source contribution opportunities.</p>
 
-Issue Scout is an open source discovery application that looks through public GitHub issues for you and sorts out relevant ones according to their keywords, language, labels, skill level required, dates, and issue status.
+<p align="center">
+  <a href="https://issue-scout-chi.vercel.app/"><img src="https://img.shields.io/badge/Live%20App-Vercel-black?logo=vercel" alt="Live App"></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-blue?logo=react" alt="React"></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+</p>
 
-![Issue Scout interface](initial_page.png)
+<p align="center">
+  <a href="https://issue-scout-chi.vercel.app/"><strong>Live App</strong></a> ·
+  <a href="#why-issue-scout">Why Issue Scout</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#how-it-works">How It Works</a>
+</p>
 
-[![Try Issue Scout](https://img.shields.io/badge/Try%20Issue%20Scout-Open%20the%20app-blue?style=for-the-badge)](https://issue-scout-chi.vercel.app/)
+## Why Issue Scout
 
-> Skill levels are best effort suggestions based on issue labels, not guarantees. Always read the original issue and the repository's contribution guidelines before starting work.
+- **Focused on discovery.** Quickly filter through public GitHub issues by keyword, programming language, label, time, and status.
+- **Skill level guidance.** Automated estimates (beginner, intermediate, advanced) derived from issue labels to help you pick tasks fitting your experience.
+- **Repository readiness.** Check repository activity, health signals, and contribution guides before starting to code.
+- **Private and local.** Bookmarks, contribution checklists, personal notes, and PR tracking are stored right in your browser's local storage. No account, no database, no tracking.
+- **Free and open source** under the MIT license.
 
-## Quick Start
+## Quick start
 
-Open the [live app](https://issue-scout-chi.vercel.app/), search for a topic or programming language, and filter the results to find an issue you might want to work on. You can preview an issue before opening it on GitHub.
-
-## Features
-
-- **Issue search:** Find public GitHub issues using keywords, programming language, labels, and issue status.
-- **Difficulty filters:** Browse issues by suggested beginner, intermediate, or advanced level, based on their labels.
-- **Issue previews:** View issue details, repository information, and contribution guidance without immediately leaving the app.
-- **Repository and issue checks:** See repository health information, a readiness score, and issue availability signals before getting started.
-- **Saved issues:** Bookmark issues and return to them later. Saved issues remain in your browser.
-- **Contribution tracking:** Keep a checklist, record your progress and notes, and save a pull request URL for each issue.
-- **Shareable links:** Share searches with their filters or link directly to a specific issue preview.
-
-## Run Locally
-
-### Requirements
-
-- Node.js 20.9 or newer
-- npm
-
-### Installation
-
-Clone the repository, install its dependencies, and start the development server:
+Needs Node.js 20 or later.
 
 ```bash
 git clone https://github.com/sharmao07/issue-scout.git
@@ -42,34 +37,57 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser. No environment variables or API keys are required.
 
-No environment variables are required for the current version.
+## Features
 
-### Useful Commands
+**Search and discovery**
+- Keyword search across public GitHub issues.
+- Filter by language (`JavaScript`, `TypeScript`, `Python`, `Rust`, `Go`, `C++`, etc.).
+- Filter by label (`good first issue`, `help wanted`, `bug`, `documentation`).
+- Filter by creation time (last 12 hours up to older) and status (`open`, `closed`, or `all`).
+- Shareable search URLs that preserve your active query and filters.
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Starts the development server |
-| `npm run test` | Runs the tests |
-| `npm run lint` | Lints code with ESLint |
-| `npm run build` | Builds project for production |
+**Issue inspection & readiness**
+- Issue details with full descriptions and direct links to GitHub.
+- Difficulty guidance (beginner, intermediate, advanced) based on issue labels.
+- Automated readiness score (0–100) checking repository activity and contribution documentation.
+- Live GitHub status checking to verify issue state and assignees before beginning work.
 
-## How It Works
+**Contribution workflow**
+- Save bookmarks to a local "Saved Issues" list.
+- Built-in 8-step contribution checklist.
+- Local notes and status tracking (Investigating, Working, PR Opened, Completed).
+- Saved pull request link for each issue.
 
-Issue Scout uses Next.js and React as the front-end technology with TypeScript and Tailwind CSS as an application language and styling framework respectively. Next.js route handlers pull the public GitHub issues and repository data and serve it to the front end.
+## How it works
 
-Filters are meant to help you find suitable issues to look through. The difficulty level suggestions depend on the labels on the issue whereas the contribution readiness score relies on the available issue and repository signals. It is only an estimate, however, so do not forget to check the issue itself and repository contribution guidelines.
+Issue Scout uses Next.js route handlers to query GitHub's public REST API, classify results, and serve them to a lightweight, responsive React front end.
 
-Issues saved and contribution progress are kept in browser local storage, allowing you to continue working on them without an Issue Scout account.
+| Component | Technology | Role |
+|---|---|---|
+| **Framework** | Next.js 16 (App Router) | Server-side API proxy, caching, and page rendering |
+| **UI & Styling** | React 19 + Tailwind CSS | Fast, accessible, and lightweight interface |
+| **Testing** | Vitest | Fast unit test suite |
+| **Persistence** | Browser `localStorage` | Keeps bookmarks, checklist progress, and notes private on your machine |
 
-## Credits
+> **Note on estimates:** Skill levels and readiness scores are automated suggestions derived from issue labels and repository signals. Always check the original issue and repository guidelines before starting work.
 
-- [GitHub REST API](https://docs.github.com/en/rest) for publicly available issue and repository information.
-- [Next.js](https://nextjs.org/) and [React](https://react.dev/) for the application framework.
-- [Tailwind CSS](https://tailwindcss.com/) for styles.
-- [Vitest](https://vitest.dev/) for testing.
+## Commands
+
+| Command | Action |
+|---|---|
+| `npm run dev` | Starts the local development server at `localhost:3000` |
+| `npm run test` | Runs the Vitest test suite |
+| `npm run lint` | Checks code formatting with ESLint |
+| `npm run build` | Builds the production bundle |
+
+## Contributing
+
+Bug reports, suggestions, and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Issue Scout is licensed under the MIT License. See [LICENSE.md](https://github.com/sharmao07/issue-scout/blob/main/LICENSE.md) for details.
+Issue Scout is open source under the [MIT License](LICENSE.md).
+
+<p align="center">Made for the open source community · <a href="https://issue-scout-chi.vercel.app/">Try Issue Scout</a></p>
