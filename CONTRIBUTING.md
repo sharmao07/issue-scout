@@ -1,10 +1,10 @@
-# Contributing to Issue Scout
+# Contributing
 
-Thanks for your interest in improving Issue Scout! Contributions of all experience levels are welcome, including UI/UX improvements, bug reports, documentation, tests, and new features.
+Thanks for helping with Issue Scout! Contributions of all experience levels are welcome.
 
-## Ways to contribute
+## Ways to help
 
-- Report a bug or an issue with search results.
+- Report a bug or suggest any idea: [GitHub issues](https://github.com/sharmao07/issue-scout/issues)
 - Suggest improvements to the interface or accessibility.
 - Improve the README or other documentation.
 - Help test filters, pagination, and error handling.
@@ -23,7 +23,7 @@ When possible, include:
 
 Open an issue at [GitHub Issues](https://github.com/sharmao07/issue-scout/issues).
 
-## Running the project locally
+## Run it locally
 
 Requirements: Node.js 20.9 or newer and npm.
 
@@ -36,7 +36,7 @@ npm run dev
 
 Open http://localhost:3000 in your browser.
 
-## Before submitting a pull request
+## Pull request
 
 1. Create a branch for your change.
 2. Keep the change focused and explain the problem it solves.
@@ -47,14 +47,7 @@ Open http://localhost:3000 in your browser.
 
 Please do not claim that a test passed unless you ran it. If a check fails, include the relevant details in your pull request.
 
-## AI-assisted contributions
 
-AI tools may be used to help with planning, understanding code, debugging, or generating suggestions. Contributors should disclose material AI assistance in their pull request, carefully review generated code, understand the submitted changes, and verify their behavior before claiming they work.
+## License
 
-Do not include secrets, API keys, or private information in prompts or commits.
-
-## Project scope
-
-Issue Scout helps people discover public GitHub issues. Its skill-level suggestions are estimates, not guarantees. Changes should preserve clear links to the original issues and avoid presenting unverified information as fact.
-
-Thanks for helping make open source easier to approach!
+Free and open source to use under the [MIT License](LICENSE.md).
