@@ -1,9 +1,7 @@
 <h1 align="center">Issue Scout</h1>
 
-<p align="center"><strong>Want to contribute to open source projects? But no idea where to start from?</strong><br>
-
-<p align="center"><strong>Discover public GitHub issues and filter them to your skills and interests.</strong><br>
-Issue scout is a simple, focused tool to find open source contribution opportunities,  Discover public GitHub issues suited to your skills and interests.</p>
+<p align="center"><strong>Want to contribute to open source but don't know where to start?</strong><br>
+Discover GitHub issues that match your skills and interests with Issue Scout, a simple tool for finding contribution opportunities.</p>
 
 <p align="center">
   <a href="https://issue-scout-chi.vercel.app/"><img src="https://img.shields.io/badge/Live%20App-Vercel-black?logo=vercel" alt="Live App"></a>
