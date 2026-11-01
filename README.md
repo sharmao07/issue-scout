@@ -28,7 +28,7 @@
 
 - **Free and open source to use** under the MIT license.
 
-> **Note on estimates:** Estimated skill levels and readiness scores are suggestions generated automatically based on issue labels and other repository information. Please refer to the original repository and issue before you get started.
+> **Note on estimates:** Estimated skill levels and readiness scores are suggestions generated automatically based on issue labels and other repository information.
 
 
 ## Set up locally
