@@ -1,14 +1,7 @@
-<h1 align="center">Issue Scout</h1>
+<h1>Issue Scout</h1>
 
-<p align="center"><strong>Find open source issues to contribute to </strong><br></p>
+<p><strong>Find open source issues to contribute to </strong><br></p>
 
-
-<p align="center">
-  <a href="#why-issue-scout">Why Issue Scout</a> ·
-  <a href="#set-up-locally">Set up locally</a> ·
-  <a href="#contributing">Contribute</a>·
-  <a href="#license">License</a>
-</p>
 
 ## Why Issue Scout?
 
