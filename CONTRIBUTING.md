@@ -36,6 +36,15 @@ npm run dev
 
 Open http://localhost:3000 in your browser.
 
+## Commands
+
+| Command | Action |
+|---|---|
+| `npm run dev` | Starts the local development server at `localhost:3000` |
+| `npm run test` | Runs the Vitest test suite |
+| `npm run lint` | Checks code formatting with ESLint |
+| `npm run build` | Builds the production bundle |
+
 ## Pull request
 
 1. Create a branch for your change.
