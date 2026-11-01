@@ -2,10 +2,6 @@
 
 <p align="center"><strong>Find open source issues to contribute to </strong><br></p>
 
-<p align="center">
-  <a href="https://issue-scout-chi.vercel.app/"><img src="https://img.shields.io/badge/Live%20App-Vercel-black?logo=vercel" alt="Live App"></a>
-  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-</p>
 
 <p align="center">
   <a href="#why-issue-scout">Why Issue Scout</a> ·
@@ -17,12 +13,6 @@
 ## Why Issue Scout?
 
 - **Filters:** Easily filter GitHub issues by keywords, languages, labels, date and status.
-
-- **Difficulty Estimates:** Filter between begineer, intermedate, and advanced issues.
-
-- **Repository Insights:** Check repository activity, health and contribution guidelines before contributing.
-
-- **Private:** Bookmarks, notes, and PR tracking all stays locally in your browser. No accounts or tracking.
 
 - **Free and open source to use** under the MIT license.
 
