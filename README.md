@@ -1,6 +1,6 @@
 # Issue Scout
 
-i wanted to contribute to open source projects but i had no idead where or how to start from, i researched a little and made issue scout. Beginners like me or even intermediates can easily use issue scout and narrow down search results using filters provided
+i wanted to contribute to open source projects but i had no idead where or how to start from, I researched a little about github api and made issue scout. Beginners like me or even intermediates can easily use issue scout and narrow down search results using filters provided
 
 ## website
 
