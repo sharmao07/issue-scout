@@ -1,5 +1,7 @@
 # Issue Scout
 
+> pls star hehe i'll improve it a lot in upcoming days, im just busy cus of exams and maybe we can work together on it so star plspls
+
 i wanted to contribute to open source projects but i had no idead where or how to start from, I researched a little about github api and made issue scout. Beginners like me or even intermediates can easily use issue scout and narrow down search results using filters provided
 
 ## website
