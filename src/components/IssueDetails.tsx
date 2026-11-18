@@ -127,7 +127,7 @@ export default function IssueDetails({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="issue-overlay"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -137,15 +137,15 @@ export default function IssueDetails({
         role="dialog"
         aria-modal="true"
         aria-labelledby="issue-preview-title"
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto border border-gray-400 bg-white p-4 text-xs text-gray-900"
+        className="details-dialog"
       >
         {/* Header bar */}
-        <div className="flex items-start justify-between border-b border-gray-300 pb-2">
+        <div className="details-header">
           <div>
-            <h2 id="issue-preview-title" className="text-base font-bold">
+            <h2 id="issue-preview-title" className="details-title">
               {issue.title} (#{issue.number})
             </h2>
-            <p className="text-gray-600">
+            <p className="details-repo">
               Repository:{" "}
               <a
                 href={issue.repositoryUrl}
@@ -161,16 +161,16 @@ export default function IssueDetails({
           <button
             type="button"
             onClick={onClose}
-            className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+            className="icon-button"
             aria-label="Close dialog"
           >
-            Close [X]
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
           </button>
         </div>
 
         {/* Metadata & Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 py-2">
-          <div className="flex flex-wrap items-center gap-2 text-gray-600">
+        <div className="details-meta">
+          <div className="flex flex-wrap items-center gap-2">
             <span>Status: <b>{issue.state}</b></span>
             <span>·</span>
             <span>Level: <b>{issue.level}</b></span>
@@ -180,11 +180,11 @@ export default function IssueDetails({
             <span>{formatDateTime(issue.createdAt)}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="details-actions">
             <button
               type="button"
               onClick={onToggleSaved}
-              className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+              className="icon-button"
             >
               {isSaved ? "Saved" : "Save"}
             </button>
@@ -192,7 +192,7 @@ export default function IssueDetails({
               href={issue.url}
               target="_blank"
               rel="noreferrer"
-              className="border border-gray-400 bg-gray-100 px-2 py-0.5 text-xs text-gray-800 hover:bg-gray-200"
+              className="icon-button"
             >
               Open on GitHub
             </a>
@@ -200,21 +200,21 @@ export default function IssueDetails({
         </div>
 
         {/* Issue Description */}
-        <div className="py-3">
-          <h3 className="font-bold text-gray-800">Description:</h3>
-          <p className="mt-1 whitespace-pre-wrap text-gray-700">
+        <div className="details-description">
+          <h3 className="font-bold">Description:</h3>
+          <p className="mt-1 whitespace-pre-wrap">
             {issue.body?.trim() || "No description provided."}
           </p>
 
           {issue.labels.length > 0 && (
-            <div className="mt-2 text-gray-600">
+            <div className="mt-2 details-muted">
               <b>Labels:</b> {issue.labels.map((l) => l.name).join(", ")}
             </div>
           )}
         </div>
 
         {/* Detailed Sections */}
-        <div className="space-y-4">
+        <div className="details-content">
           <AvailabilitySection
             loading={availabilityLoading}
             error={availabilityError}

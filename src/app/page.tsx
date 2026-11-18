@@ -255,28 +255,35 @@ export default function Home() {
   const displayedIssues = resultsView === "saved" ? savedIssues : issues;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
+    <main className="app-page">
+      <div className="app-shell">
         <SearchHeader />
 
+        <section className="page-intro" aria-labelledby="page-title">
+          <p className="eyebrow">OPEN SOURCE · CONTRIBUTION DISCOVERY</p>
+          <h2 id="page-title" className="page-title">
+            Find your next <span>open-source contribution.</span>
+          </h2>
+          <p className="page-description">
+            Browse real GitHub issues, narrow them down to your interests, and keep track of the ones you want to work on.
+          </p>
+        </section>
+
         {directIssueError && (
-          <div
-            role="alert"
-            className="mb-3 border border-red-300 bg-red-50 p-2 text-xs text-red-800"
-          >
-            <span>{directIssueError} </span>
-            <button
-              type="button"
-              onClick={() => setDirectIssueError("")}
-              className="text-red-900 underline"
-            >
-              [Dismiss]
-            </button>
+          <div role="alert" className="alert-error">
+            <span>{directIssueError}</span>
+            <button type="button" onClick={() => setDirectIssueError("")}>Dismiss</button>
           </div>
         )}
 
-        {/* Search & Filter section */}
-        <section aria-label="Search and filters">
+        <section className="search-panel" aria-label="Search and filters">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">ISSUE DISCOVERY</p>
+              <h2>What would you like to work on?</h2>
+            </div>
+            <p className="panel-note">A few filters can make the search a lot more useful.</p>
+          </div>
           <SearchForm
             query={query}
             setQuery={setQuery}
@@ -299,56 +306,62 @@ export default function Home() {
           />
         </section>
 
-        {/* Results section */}
-        <section className="mt-6" aria-live="polite">
-          {/* View toggle header */}
-          <div className="flex items-center gap-4 border-b border-gray-300 pb-2 text-xs">
-            <button
-              type="button"
-              onClick={() => setResultsView("search")}
-              className={
-                resultsView === "search"
-                  ? "font-bold text-gray-900 underline"
-                  : "text-blue-600 underline"
-              }
-            >
-              Search results {searched && !loading && !error ? `(${issues.length})` : ""}
-            </button>
+        <section className="results-section" aria-live="polite">
+          <div className="results-heading">
+            <div>
+              <p className="section-kicker">YOUR WORKSPACE</p>
+              <h2>Explore issues</h2>
+            </div>
+            <p className="results-summary">
+              {resultsView === "saved"
+                ? `${savedIssuesReady ? savedIssues.length : "…"} saved for later`
+                : searched && !loading && !error
+                  ? `${totalCount.toLocaleString()} matching issues found`
+                  : "Fresh opportunities, one search away"}
+            </p>
+          </div>
 
+          <div className="results-tabs" role="tablist" aria-label="Issue views">
             <button
               type="button"
-              onClick={() => setResultsView("saved")}
-              className={
-                resultsView === "saved"
-                  ? "font-bold text-gray-900 underline"
-                  : "text-blue-600 underline"
-              }
+              role="tab"
+              aria-selected={resultsView === "search"}
+              onClick={() => setResultsView("search")}
+              className={`results-tab${resultsView === "search" ? " is-active" : ""}`}
             >
-              Saved issues ({savedIssuesReady ? savedIssues.length : "…"})
+              Search results
+              {searched && !loading && !error && <span className="count-badge">{issues.length}</span>}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={resultsView === "saved"}
+              onClick={() => setResultsView("saved")}
+              className={`results-tab${resultsView === "saved" ? " is-active" : ""}`}
+            >
+              Saved issues
+              <span className="count-badge">{savedIssuesReady ? savedIssues.length : "…"}</span>
             </button>
           </div>
 
-          {/* Results list / State display */}
           {resultsView === "search" && loading ? (
-            <div className="py-6 text-xs text-gray-600">
-              Loading issues from GitHub…
+            <div className="state-panel" role="status">
+              <div className="state-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.2 4.2" />
+                </svg>
+              </div>
+              <strong>Looking through GitHub…</strong>
+              <p>Finding issues that match your search.</p>
+              <span className="loading-dots" aria-hidden="true"><span /><span /><span /></span>
             </div>
           ) : resultsView === "search" && error ? (
-            <div
-              role="alert"
-              className="my-3 border border-red-300 bg-red-50 p-2 text-xs text-red-800"
-            >
-              <p className="font-semibold">Error: {error}</p>
-              <button
-                type="button"
-                onClick={() => setError("")}
-                className="mt-1 text-red-900 underline"
-              >
-                [Dismiss]
-              </button>
+            <div role="alert" className="alert-error">
+              <strong>Couldn’t complete that search.</strong> {error}
+              <button type="button" onClick={() => setError("")}>Dismiss</button>
             </div>
           ) : displayedIssues.length > 0 ? (
-            <div>
+            <div className="issue-list">
               {displayedIssues.map((issue) => (
                 <IssueCard
                   key={issue.id}
@@ -360,16 +373,33 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-xs text-gray-500">
-              {resultsView === "saved"
-                ? "No saved issues yet. Click Save on an issue to bookmark it."
-                : searched
-                  ? "No matching issues found. Try different keywords or filters."
-                  : "Enter a keyword above to find issues."}
+            <div className="state-panel">
+              <div className="state-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  {resultsView === "saved" ? (
+                    <path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.7L6 21V4.8Z" />
+                  ) : (
+                    <><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.2 4.2" /></>
+                  )}
+                </svg>
+              </div>
+              <strong>
+                {resultsView === "saved"
+                  ? "Nothing saved yet"
+                  : searched
+                    ? "No issues found"
+                    : "Start with a search"}
+              </strong>
+              <p>
+                {resultsView === "saved"
+                  ? "Save an issue that catches your eye and it’ll be waiting here."
+                  : searched
+                    ? "Try another keyword or loosen one of your filters."
+                    : "Search by a technology, topic, or issue label to find a place to contribute."}
+              </p>
             </div>
           )}
 
-          {/* Pagination */}
           {resultsView === "search" && searched && !loading && !error && (
             <Pagination
               page={page}
@@ -381,7 +411,6 @@ export default function Home() {
           )}
         </section>
 
-        {/* Issue Details Modal */}
         {selectedIssue && (
           <IssueDetails
             key={selectedIssue.url}
@@ -392,10 +421,11 @@ export default function Home() {
           />
         )}
 
-        <footer className="mt-8 border-t border-gray-300 pt-3 text-xs text-gray-500">
-          Issue Scout
+        <footer className="site-footer">
+          <span>Issue Scout · Built for people who want to contribute.</span>
+          <a href="https://github.com/sharmao07/issue-scout" target="_blank" rel="noreferrer">Open source on GitHub ↗</a>
         </footer>
       </div>
-    </div>
+    </main>
   );
 }

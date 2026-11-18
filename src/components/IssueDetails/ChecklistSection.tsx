@@ -33,52 +33,39 @@ export default function ChecklistSection({
   onPullRequestUrlChange,
 }: Props) {
   return (
-    <section className="border-t border-gray-300 pt-3 text-xs">
-      <div className="flex items-center justify-between gap-2">
-        <h4 className="font-bold text-gray-800">
-          Contribution Checklist ({completedSteps}/{CHECKLIST_STEPS.length} - {completionPercent}%)
-        </h4>
-
-        <button
-          type="button"
-          onClick={onResetChecklist}
-          className="text-blue-600 underline"
-        >
-          Reset
-        </button>
+    <section className="details-section">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h4>Contribution tracker</h4>
+          <p className="details-muted mt-1">{completedSteps} of {CHECKLIST_STEPS.length} steps completed</p>
+        </div>
+        <button type="button" onClick={onResetChecklist} className="text-action">Reset checklist</button>
       </div>
 
-      {/* Checklist items */}
-      <div className="mt-2 space-y-1">
+      <div className="mt-3 details-progress"><span style={{ width: `${completionPercent}%` }} /></div>
+
+      <div className="details-surface mt-3 space-y-3">
         {CHECKLIST_STEPS.map((step, index) => (
-          <label
-            key={step}
-            className="flex items-start gap-2 cursor-pointer text-gray-800"
-          >
+          <label key={step} className="flex cursor-pointer items-start gap-3 text-[11px] leading-relaxed text-[var(--ink)]">
             <input
               type="checkbox"
               checked={checkedSteps[index] ?? false}
               onChange={() => onToggleStep(index)}
-              className="mt-0.5"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--green)]"
             />
-            <span className={checkedSteps[index] ? "line-through text-gray-400" : ""}>
-              {step}
-            </span>
+            <span className={checkedSteps[index] ? "text-[var(--muted)] line-through" : ""}>{step}</span>
           </label>
         ))}
       </div>
 
-      {/* Status, PR URL, and Notes Form */}
-      <div className="mt-3 space-y-2 border border-gray-300 p-2">
-        <div className="flex items-center gap-2">
-          <label htmlFor="contribution-status" className="font-medium text-gray-700">
-            Status:
-          </label>
+      <div className="details-surface mt-3 space-y-3">
+        <div>
+          <label htmlFor="contribution-status" className="mb-1.5 block font-semibold text-[var(--ink)]">Your status</label>
           <select
             id="contribution-status"
             value={status}
             onChange={(e) => onStatusChange(e.target.value as ContributionStatus)}
-            className="border border-gray-400 bg-white px-2 py-0.5 text-xs text-gray-800"
+            className="details-form-control"
           >
             <option value="not-started">Not started</option>
             <option value="investigating">Investigating</option>
@@ -89,40 +76,27 @@ export default function ChecklistSection({
         </div>
 
         <div>
-          <label htmlFor="pull-request-url" className="block font-medium text-gray-700 mb-0.5">
-            PR URL:
-          </label>
+          <label htmlFor="pull-request-url" className="mb-1.5 block font-semibold text-[var(--ink)]">Pull request URL</label>
           <input
             id="pull-request-url"
             type="url"
             value={pullRequestUrl}
             onChange={(e) => onPullRequestUrlChange(e.target.value)}
             placeholder="https://github.com/owner/repo/pull/123"
-            className="w-full border border-gray-400 bg-white px-2 py-1 text-xs text-gray-800"
+            className="details-form-control"
           />
-          {validPullRequestUrl && (
-            <a
-              href={validPullRequestUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-0.5 inline-block text-blue-600 underline"
-            >
-              Open PR
-            </a>
-          )}
+          {validPullRequestUrl && <a href={validPullRequestUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block">Open your PR ↗</a>}
         </div>
 
         <div>
-          <label htmlFor="contribution-notes" className="block font-medium text-gray-700 mb-0.5">
-            Notes:
-          </label>
+          <label htmlFor="contribution-notes" className="mb-1.5 block font-semibold text-[var(--ink)]">Notes</label>
           <textarea
             id="contribution-notes"
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Write notes here..."
-            rows={3}
-            className="w-full border border-gray-400 bg-white px-2 py-1 text-xs text-gray-800"
+            placeholder="Things to check, files to explore, questions for the maintainers…"
+            rows={4}
+            className="details-form-control resize-y"
           />
         </div>
       </div>

@@ -52,162 +52,129 @@ export default function SearchForm({
   shareUrl,
 }: Props) {
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      {/* Search Input Bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="query" className="text-xs font-medium text-gray-700">
-          Search:
-        </label>
+    <form onSubmit={onSubmit} className="search-form">
+      <div className="search-main">
+        <span className="search-symbol" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="10.8" cy="10.8" r="6.8" />
+            <path d="m16 16 4.2 4.2" />
+          </svg>
+        </span>
         <input
           id="query"
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Keyword..."
-          className="flex-1 min-w-[200px] border border-gray-400 bg-white px-2 py-1 text-sm text-gray-900 outline-none"
+          placeholder="Try “good first issue”, React, or accessibility…"
+          aria-label="Search GitHub issues"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="border border-gray-400 bg-gray-100 px-4 py-1 text-sm font-medium text-gray-800 hover:bg-gray-200 disabled:opacity-50"
-        >
-          {loading ? "Searching..." : "Search"}
+        <button type="submit" disabled={loading} className="primary-button">
+          {loading ? (
+            <>
+              <span className="loading-dots" aria-hidden="true"><span /><span /><span /></span>
+              Searching
+            </>
+          ) : (
+            <>
+              Search issues
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </>
+          )}
         </button>
       </div>
 
-      {/* Basic Filters Row */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="language" className="text-gray-700">
-            Language:
-          </label>
-          <select
-            id="language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="border border-gray-400 bg-white px-1.5 py-1 text-xs text-gray-800"
-          >
-            <option value="">Any</option>
-            {LANGUAGES.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div>
+        <p className="filter-heading">Refine your search</p>
+        <div className="filter-grid">
+          <div className="filter-field">
+            <label htmlFor="language">Language</label>
+            <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+              <option value="">Any language</option>
+              {LANGUAGES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="label" className="text-gray-700">
-            Label:
-          </label>
-          <select
-            id="label"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="border border-gray-400 bg-white px-1.5 py-1 text-xs text-gray-800"
-          >
-            <option value="">Any</option>
-            <option value="good first issue">Good first issue</option>
-            <option value="help wanted">Help wanted</option>
-            <option value="bug">Bug</option>
-            <option value="documentation">Documentation</option>
-          </select>
-        </div>
+          <div className="filter-field">
+            <label htmlFor="label">Issue label</label>
+            <select id="label" value={label} onChange={(e) => setLabel(e.target.value)}>
+              <option value="">Any label</option>
+              <option value="good first issue">Good first issue</option>
+              <option value="help wanted">Help wanted</option>
+              <option value="bug">Bug</option>
+              <option value="documentation">Documentation</option>
+            </select>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="level" className="text-gray-700">
-            Skill level:
-          </label>
-          <select
-            id="level"
-            value={level}
-            onChange={(e) => setLevel(e.target.value as LevelFilter)}
-            className="border border-gray-400 bg-white px-1.5 py-1 text-xs text-gray-800"
-          >
-            <option value="all">Any</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-            <option value="unspecified">Unspecified</option>
-          </select>
-        </div>
+          <div className="filter-field">
+            <label htmlFor="level">Estimated level</label>
+            <select id="level" value={level} onChange={(e) => setLevel(e.target.value as LevelFilter)}>
+              <option value="all">Any level</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="unspecified">Unspecified</option>
+            </select>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="age" className="text-gray-700">
-            Created:
-          </label>
-          <select
-            id="age"
-            value={age}
-            onChange={(e) => setAge(e.target.value as IssueAgeFilter)}
-            className="border border-gray-400 bg-white px-1.5 py-1 text-xs text-gray-800"
-          >
-            <option value="any">Any time</option>
-            <option value="12h">Last 12 hours</option>
-            <option value="1d">Last 1 day</option>
-            <option value="2d">Last 2 days</option>
-            <option value="4d">Last 4 days</option>
-            <option value="6d">Last 6 days</option>
-            <option value="1w">Last 1 week</option>
-            <option value="2w">Last 2 weeks</option>
-            <option value="1m">Last 1 month</option>
-            <option value="2m">Last 2 months</option>
-            <option value="older">Older</option>
-          </select>
-        </div>
+          <div className="filter-field">
+            <label htmlFor="age">Posted</label>
+            <select id="age" value={age} onChange={(e) => setAge(e.target.value as IssueAgeFilter)}>
+              <option value="any">Any time</option>
+              <option value="12h">Last 12 hours</option>
+              <option value="1d">Last 1 day</option>
+              <option value="2d">Last 2 days</option>
+              <option value="4d">Last 4 days</option>
+              <option value="6d">Last 6 days</option>
+              <option value="1w">Last 1 week</option>
+              <option value="2w">Last 2 weeks</option>
+              <option value="1m">Last 1 month</option>
+              <option value="2m">Last 2 months</option>
+              <option value="older">Older</option>
+            </select>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="status" className="text-gray-700">
-            Status:
-          </label>
-          <select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as IssueStatusFilter)}
-            className="border border-gray-400 bg-white px-1.5 py-1 text-xs text-gray-800"
-          >
-            <option value="open">Open</option>
-            <option value="closed">Closed</option>
-            <option value="all">Any</option>
-          </select>
+          <div className="filter-field">
+            <label htmlFor="status">Issue status</label>
+            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as IssueStatusFilter)}>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+              <option value="all">Any status</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Reset & Share Links */}
-      <div className="flex flex-wrap items-center gap-3 text-xs pt-1">
-        <button
-          type="button"
-          onClick={onReset}
-          className="text-blue-600 underline hover:text-blue-800"
-        >
-          Reset filters
-        </button>
-        <button
-          type="button"
-          onClick={onCopyLink}
-          className="text-blue-600 underline hover:text-blue-800"
-        >
-          Share search URL
-        </button>
+      <div>
+        <div className="search-utilities">
+          <button type="button" onClick={onReset} className="text-action">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" /><path d="M3 3v5h5" />
+            </svg>
+            Reset filters
+          </button>
+          <button type="button" onClick={onCopyLink} className="text-action">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+              <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
+            </svg>
+            Share search
+          </button>
+          {copyLinkMessage && <span className="copy-message" role="status">{copyLinkMessage}</span>}
+        </div>
 
-        {copyLinkMessage && (
-          <span className="text-gray-600">
-            {copyLinkMessage}
-          </span>
-        )}
-      </div>
-
-      {shareUrl && copyLinkMessage && (
-        <div className="pt-1">
+        {shareUrl && copyLinkMessage && (
           <input
             type="url"
             readOnly
             value={shareUrl}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-full border border-gray-300 bg-gray-50 px-2 py-1 text-xs text-gray-700"
+            aria-label="Shareable search URL"
+            className="share-url-input"
           />
-        </div>
-      )}
+        )}
+      </div>
     </form>
   );
 }
